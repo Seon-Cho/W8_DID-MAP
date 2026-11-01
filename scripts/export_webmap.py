@@ -1,9 +1,9 @@
 """웹 동적 지도(Leaflet + CARTO 배경)용 자료를 만든다. 결과는 W8_DID-MAP/site/map/.
 
-- did_{기준}_{연도}.geojson : 연도·밀도 기준별 DID 폴리곤 (500m 격자)
+- did_{기준}_{연도}.geojson : 연도별 도시 폴리곤 (1km 격자, 주 분석 기준만)
 - change_{기준}.geojson     : 2015→2024 유지·신규·빈 네모 구역
 - units.geojson             : 시·군 경계 (특별시·광역시·특별자치시는 하나로, 일반구는 시로 합침. 클릭·확대용)
-- series.json               : 전국과 시·군별 연도·기준별 DID 면적·인구 (그래프용)
+- series.json               : 전국과 시·군별 연도별 도시 면적·인구 (그래프용)
 
 실행: ~/.venvs/did-analysis/bin/python scripts/export_webmap.py
 """
@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 GPKG = ROOT / "output" / "gpkg" / "did_polygons.gpkg"
 OUT = ROOT / "W8_DID-MAP" / "site" / "map"
 RES = da.MAIN_RES
+THRS = [da.MAIN_THR]  # 웹 지도에는 주 분석 기준(도시 1,500명/km²)만 싣는다
 Y0, Y1 = da.CHANGE_START, da.YEARS[-1]
 SGG_SIMPLIFY_M = 100
 GAP_M = 200
@@ -73,7 +74,7 @@ def main():
     size = 0
 
     results = {}
-    for thr in da.THRESHOLDS:
+    for thr in THRS:
         for year in da.YEARS:
             did = gpd.read_file(GPKG, layer=f"did_{RES}_{thr}_{year}")
             did["density"] = (did["pop"] / did["area_km2"]).round(0).astype(int)
@@ -103,7 +104,7 @@ def main():
     summ = summ[summ["res"] == RES]
     series = {"years": da.YEARS, "national": {}, "units": {}}
     unit_of = sgg.set_index("SIGUNGU_CD")["unit_cd"]
-    for thr in da.THRESHOLDS:
+    for thr in THRS:
         s = summ[summ["threshold"] == thr].set_index("year").reindex(da.YEARS)
         series["national"][thr] = {"area": s["did_area_km2"].round(2).tolist(), "pop": s["did_pop"].tolist()}
         did_cells = {y: da.extract_did(cells, y, thr)[1] for y in da.YEARS}

@@ -1,25 +1,25 @@
 """
-6개 도시 확대도에 얹을 공공시설·교통 레이어 만들기
+확대 분석 지역 지도에 얹을 공공시설·교통 레이어 만들기
 
 출처 (data/facilities/)
-  - 학교(초·중·고)      : 공공데이터포털 전국초중등학교위치표준데이터 (schools_p*.json, 좌표 포함)
-  - 보건기관            : 공공데이터포털 전국보건기관표준데이터 (health_centers.json, 주소만 있음 → 주소 검색)
+  - 대학교·전문대학     : 카카오 로컬 키워드 검색 (본교 항목만)
+  - 보건소·보건의료원   : 공공데이터포털 전국보건기관표준데이터 (health_centers.json, 주소만 있음 → 주소 검색)
                           표준데이터에 빠진 지자체가 많아 이름 검색('보건소' 등)으로 보완
   - 철도역              : 국가철도공단 철도역 정보 (rail_stations_krna.csv, 좌표 포함)
   - 도시철도 역·노선    : 국토교통부 도시철도 전체노선 (urban_rail_lines.csv, 노선별 역 순서)
                           역 위치는 이름 검색, 노선은 역을 순서대로 이은 개략선
-  - 청사                : 시·구·군청, 읍면동 행정복지센터를 이름 검색
+  - 청사                : 시·도청, 시·구·군청을 이름 검색
   - 고속도로 IC         : 한국도로공사 공공데이터포털 영업소 위치정보 API (EX_API_KEY, ex_units.json에 저장)
   - 고속도로 선형       : 국토교통부 표준노드링크 MOCT_LINK 중 고속국도(ROAD_RANK 101) → moct_expressway.gpkg
   - 철도 선형           : OpenStreetMap에서 만든 간략 선형 (이전 과제 transport.geojson → osm_transport.geojson)
-  - 청사·보건소·버스터미널 : 카카오 로컬 키워드 검색 (KAKAO_API_KEY, kakao_cache.json에 저장)
+  - 대학교·청사·보건소·버스터미널 : 카카오 로컬 키워드 검색 (KAKAO_API_KEY, kakao_cache.json에 저장)
                           키가 없으면 아래 Nominatim 이름 검색으로 대신한다
 
 이름·주소 검색은 Nominatim(OpenStreetMap 기반 지오코더)을 쓰고, 결과는 geocode_cache.json에 저장해
 다시 실행할 때는 검색하지 않는다. 이용 정책에 따라 초당 1건만 보낸다.
 
 출력: data/facilities/facilities.gpkg (EPSG:5179)
-  레이어 schools, health, townhall, station, urban_rail_station, urban_rail_line, terminal, ic, highway, rail_line
+  레이어 university, health, townhall, station, urban_rail_station, urban_rail_line, terminal, ic, highway, rail_line
 
 실행 (did_analysis.py를 한 번 돌려 output/_cache/sigungu.gpkg가 있어야 함)
   ~/.venvs/did-analysis/bin/python scripts/fetch_facilities.py
@@ -54,12 +54,15 @@ MIN_RECT_DEG = 0.01  # 카카오 검색 범위를 이보다 좁게(약 1 km) 쪼
 DOTENV_DEFAULT = Path.home() / "26-2. smart-city-seminar" / "professor_data" / "code-main" / ".env"
 
 # 도시철도 권역 → 확대도 도시
-URBAN_RAIL_REGION = {}  # 6개 지역 모두 도시철도 없음
-HEALTH_NAME = r"보건소|보건지소|보건진료소|보건의료원"
+URBAN_RAIL_REGION = {"수도권": "인천 중구"}
+# 권역이 넓은 곳은 해당 지역을 지나는 노선만 찾는다
+URBAN_RAIL_LINES = {"수도권": {"1호선", "공항", "인천1호선", "인천2호선", "자기부상"}}
+HEALTH_NAME = r"보건소|보건의료원"  # 보건지소·보건진료소는 넣지 않는다
+UNIV_KINDS = ("대학교", "전문대학")
 CENTER_NAME = r"행정복지센터|주민센터|읍사무소|면사무소"
 # 보건기관 표준데이터 중 주소 검색할 대상: 6개 도시와 바로 붙은 시군만
-HEALTH_SIDO = (r"완도|해남|강진|청도|경산|밀양|창녕|양구|인제|화천|춘천|순창|담양|임실|남원|정읍|곡성|"
-               r"괴산|충주|음성|증평|청주|문경|제천|단양|영월|원주")
+HEALTH_SIDO = (r"안동|예천|영주|봉화|청송|의성|광양|순천|여수|하동|청주|증평|진천|괴산|보은|옥천|세종|"
+               r"인천광역시|인천 ")
 
 
 # ---------------------------------------------------------------- 공통
@@ -127,22 +130,6 @@ def clip_city(g, areas):
 
 
 # ---------------------------------------------------------------- 학교
-def build_schools(areas, crs):
-    recs = []
-    for f in sorted(FAC.glob("schools_p*.json")):
-        recs += json.loads(f.read_text())
-    df = pd.DataFrame(recs)
-    df = df[df["OPER_STTUS"].eq("운영")].copy()
-    df["lat"] = pd.to_numeric(df["LATITUDE"], errors="coerce")
-    df["lon"] = pd.to_numeric(df["LONGITUDE"], errors="coerce")
-    df = df.dropna(subset=["lat", "lon"])
-    g = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df["lon"], df["lat"]), crs=4326).to_crs(crs)
-    g["found_year"] = pd.to_datetime(g["FOND_DATE"], errors="coerce").dt.year
-    g = g.rename(columns={"SCHOOL_NM": "name", "SCHOOL_SE": "subkind"})
-    g["source"] = "학교위치표준데이터"
-    return clip_city(g[["name", "subkind", "found_year", "FOND_TYPE", "source", "geometry"]], areas)
-
-
 # ---------------------------------------------------------------- 철도
 def build_rail_stations(areas, crs):
     with open(FAC / "rail_stations_krna.csv", encoding="cp949") as f:
@@ -158,7 +145,8 @@ def build_rail_stations(areas, crs):
 
 def build_urban_rail(areas, crs, geo):
     with open(FAC / "urban_rail_lines.csv", encoding="cp949") as f:
-        rows = [r for r in csv.DictReader(f) if r["권역명"] in URBAN_RAIL_REGION]
+        rows = [r for r in csv.DictReader(f) if r["권역명"] in URBAN_RAIL_REGION
+                and r["노선명"] in URBAN_RAIL_LINES.get(r["권역명"], {r["노선명"]})]
     stations, lines, missing = [], [], []
     by_line = {}
     for r in rows:
@@ -208,8 +196,7 @@ def sigungu_query_names(row):
 
 
 SIDO_HALL = {}
-SIDO_NAME = {"32": "강원특별자치도", "33": "충청북도", "35": "전북특별자치도", "36": "전라남도",
-             "37": "경상북도"}
+SIDO_NAME = {"23": "인천광역시", "33": "충청북도", "36": "전라남도", "37": "경상북도"}
 
 
 def build_townhalls(areas, crs, geo):
@@ -421,16 +408,16 @@ def build_kakao_layers(areas, crs, kakao):
     return {
         "terminal": kakao_layer(kakao, areas, crs, ["버스터미널", "시외버스터미널", "고속버스터미널"],
                                 lambda d: cat(d).endswith("고속,시외버스터미널"), lambda d: "버스터미널"),
-        "townhall": pd.concat([
-            kakao_layer(kakao, areas, crs, ["구청", "시청", "군청", "광역시청", "도청"],
-                        lambda d: cat(d).split(" > ")[-1] in ("구청", "시청", "군청", "도청")
-                        and d["place_name"].replace(" ", "").endswith("청"), hall_level),  # 부서·별관·예정지 제외
-            kakao_layer(kakao, areas, crs, ["행정복지센터", "주민센터", "읍사무소", "면사무소"],
-                        lambda d: re.search(CENTER_NAME + "|동행정복지센터", cat(d)) is not None
-                        and "분소" not in d["place_name"], lambda d: "읍면동"),
-        ], ignore_index=True),
-        "health": kakao_layer(kakao, areas, crs, ["보건소", "보건지소", "보건진료소"],
-                              lambda d: "보건소" in cat(d) or re.search(HEALTH_NAME, cat(d)) is not None,
+        # 본교 항목만 (단과대학·건물·부속시설은 분류가 한 단계 더 깊다)
+        "university": kakao_layer(kakao, areas, crs, ["대학교", "전문대학"],
+                                  lambda d: cat(d).split(" > ")[-1] in UNIV_KINDS and "캠퍼스" not in cat(d),
+                                  lambda d: cat(d).split(" > ")[-1]),
+        "townhall": kakao_layer(kakao, areas, crs, ["구청", "시청", "군청", "광역시청", "도청"],
+                                lambda d: cat(d).split(" > ")[-1] in ("구청", "시청", "군청", "도청")
+                                and d["place_name"].replace(" ", "").endswith("청"), hall_level),  # 부서·별관·예정지 제외
+        "health": kakao_layer(kakao, areas, crs, ["보건소", "보건의료원"],
+                              lambda d: re.search(HEALTH_NAME, cat(d)) is not None
+                              and not re.search(r"보건지소|보건진료소", d["place_name"]),
                               lambda d: (re.search(HEALTH_NAME, d["place_name"]) or [None])[0] or "보건소"),
     }
 
@@ -454,14 +441,13 @@ def main():
     geo = Geocoder()
     layers = {}
     try:
-        print("학교 / 철도역")
-        layers["schools"] = build_schools(areas, crs)
+        print("철도역")
         layers["station"] = build_rail_stations(areas, crs)
         print("도시철도 (역 이름 검색)")
         layers["urban_rail_station"], layers["urban_rail_line"] = build_urban_rail(areas, crs, geo)
         kakao_key = env_key("KAKAO_API_KEY")
         if kakao_key:
-            print("청사·보건소·버스터미널 (카카오 장소검색)")
+            print("대학교·청사·보건소·버스터미널 (카카오 장소검색)")
             kakao = Kakao(kakao_key)
             try:
                 layers.update(build_kakao_layers(areas, crs, kakao))

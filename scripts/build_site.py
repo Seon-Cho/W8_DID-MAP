@@ -27,16 +27,11 @@ RES, THR = da.MAIN_RES, da.MAIN_THR
 IMAGES = {
     f"maps/did_change_2015_2024_{RES}_{THR}_national.png": "did_change_national",
     f"maps/did_change_2015_2024_{RES}_{THR}_capital.png": "did_change_capital",
-    f"maps/compare_overlay_2024_{RES}_national.png": "compare_sgis_2024",
     f"maps/cities/cities_change_2015_2024_{RES}_{THR}.png": "cities_change",
-    "maps/migration/migration_trends.png": "migration_trends",
-    "maps/migration/lost_did_destinations.png": "lost_did_destinations",
 }
 for c in CITIES:
-    IMAGES[f"maps/cities/city_{c}_{RES}.png"] = f"city_{c}"
     IMAGES[f"maps/cities/facilities_{c}_{RES}.png"] = f"facilities_{c}"
-    IMAGES[f"maps/migration/flows_{c}.png"] = f"flows_{c}"
-    IMAGES[f"maps/migration/lost_did_flows_{c}.png"] = f"lost_{c}"
+IMAGES["maps/access/access_cities.png"] = "access_cities"
 
 
 def images():
@@ -61,7 +56,7 @@ def unit_type(da, dd):
 
 
 def typology():
-    """시·군(동적 지도 단위)별 2015→2024 도시·준밀집지역 면적·밀도 변화와 유형."""
+    """시·군(동적 지도 단위)별 2015→2024 도시 면적·밀도 변화와 유형."""
     m = SITE / "map"
     series = json.loads((m / "series.json").read_text(encoding="utf-8"))
     units = json.loads((m / "units.geojson").read_text(encoding="utf-8"))
@@ -95,10 +90,6 @@ def chart_data():
               for r, g in reg.groupby("region", sort=False)}
 
     dens = pd.read_csv(t / f"sigungu_density_change_{Y0}_{Y1}.csv").head(10)
-    area = pd.read_csv(t / f"sigungu_area_change_{Y0}_{Y1}.csv")
-    # 비수도권 면적 증가율 순위 (2015년에 DID가 없던 곳은 증가율을 낼 수 없어 빠진다)
-    area = area[~area["sido"].isin(["서울", "경기", "인천"])].dropna(subset=["area_chg_pct"]) \
-        .sort_values("area_chg_pct", ascending=False).head(10)
 
     # 인구감소지역(92곳)과 확대 분석 대상 표시
     decline = pd.read_csv(ROOT / "data" / "reference" / "population_decline_92.csv")
@@ -106,7 +97,7 @@ def chart_data():
     sgg = da.load_sigungu()
     sgg["sido"] = sgg["sido_cd"].map(da.SIDO)
     focus = {(r.sido, r.SIGUNGU_NM): c for c, f in da.CITY_ZOOMS.items() for r in sgg[f(sgg)].itertuples()}
-    for tbl in (dens, area):
+    for tbl in (dens,):
         keys = list(zip(tbl["sido"], tbl["SIGUNGU_NM"]))
         tbl["decline92"] = [k in decline for k in keys]
         tbl["focus"] = [focus.get(k, "") for k in keys]
@@ -116,21 +107,17 @@ def chart_data():
     cities = []
     for c, f in da.CITY_ZOOMS.items():
         (a0, d0), (a1, d1) = da.city_stats(region, sgg[f(sgg)], Y0, Y1).values()
-        cities.append({"city": c, "name": " ".join(sorted({n for (_, n), cc in focus.items() if cc == c})),
+        names = sorted({n for (_, n), cc in focus.items() if cc == c})
+        name = (c if names[0] in c else names[0]) if len(names) == 1 else f"{names[0].split()[0]} ({len(names)}개 구)"
+        cities.append({"city": c, "name": name,
                        "area0": round(a0, 1), "area1": round(a1, 1), "dens0": round(d0), "dens1": round(d1)})
     fac = pd.read_csv(t / "facilities_in_did.csv")
     zone_cols = [c for c in fac.columns if c not in ("city", "layer", "group", "total")]
-    layer_nm = {"schools": "학교", "health": "보건기관", "townhall": "청사", "station": "철도역",
+    layer_nm = {"university": "대학교", "schools": "학교", "health": "보건기관", "townhall": "청사", "station": "철도역",
                 "urban_rail_station": "도시철도역", "terminal": "버스터미널", "ic": "고속도로 IC"}
     fac_rows = {c: [[layer_nm.get(r.layer, r.layer) + ("" if r.group == "전체" else f" ({r.group})"), int(r.total)]
                     + [int(r[i + 4]) for i in range(len(zone_cols))]
                     for r in g.itertuples(index=False)] for c, g in fac.groupby("city", sort=False)}
-
-    mig = pd.read_csv(t / "migration_summary.csv")
-    lost = pd.read_csv(t / "lost_did_destinations.csv")
-    dest = ["유지 도시화지역", "신규 도시화지역", "빈 네모", "비도시화지역", "도시권 다른 시군구", "도시권 밖"]
-    lost = lost.groupby(["city", "origin"], sort=False)[dest].sum()
-    lost = (100 * lost.div(lost.sum(axis=1), axis=0)).round(1).reset_index()
 
     data = {
         "summary": s.reset_index()[["year", "n_did", "did_area_km2", "did_pop", "did_density", "pop_share_pct"]]
@@ -140,15 +127,12 @@ def chart_data():
         "regions": series,
         "top_density": dens[["sido", "SIGUNGU_NM", f"density_{Y0}", f"density_{Y1}", "density_chg_pct",
                              "area_chg_pct", "pop_chg_pct", "decline92", "focus"]].to_dict("records"),
-        "top_area": area[["sido", "SIGUNGU_NM", f"area_{Y0}", f"area_{Y1}", "area_chg_km2", "area_chg_pct",
-                          "density_chg_pct", "decline92", "focus"]].to_dict("records"),
         "cities": cities,
         "typology": typology(),
         "fac_cols": zone_cols,
         "fac": fac_rows,
-        "migration": mig[["city", "year", "core_net_out_ring_per1000", "outward_share"]].round(1)
-        .to_dict("records"),
-        "lost": lost.to_dict("records"),
+        "access_zone": pd.read_csv(t / "accessibility_by_zone.csv").to_dict("records"),
+        "access_sens": pd.read_csv(t / "accessibility_sensitivity.csv").to_dict("records"),
     }
     (SITE / "data.js").write_text("window.DID = " + json.dumps(data, ensure_ascii=False) + ";\n", encoding="utf-8")
 
@@ -156,11 +140,13 @@ def chart_data():
 def repo_files():
     (REPO / "scripts").mkdir(parents=True, exist_ok=True)
     for f in ["did_analysis.py", "fetch_facilities.py", "migration_od.py", "migration_analysis.py",
-              "lost_did_flows.py", "export_webmap.py", "build_site.py"]:
+              "lost_did_flows.py", "export_webmap.py", "fetch_roads.py", "accessibility.py", "build_site.py"]:
         shutil.copy2(ROOT / "scripts" / f, REPO / "scripts" / f)
     res = REPO / "results"
     (res / "tables").mkdir(parents=True, exist_ok=True)
     for f in (OUT / "tables").glob("*.csv"):
+        if f.name == "accessibility_cells.csv":  # 격자 인구가 들어 있어 공개하지 않는다
+            continue
         shutil.copy2(f, res / "tables" / f.name)
     shutil.copy2(OUT / "gpkg" / "did_polygons.gpkg", res / "did_polygons.gpkg")
 

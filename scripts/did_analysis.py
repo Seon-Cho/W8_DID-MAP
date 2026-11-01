@@ -55,7 +55,7 @@ QUEEN = {300: True, 1500: False}  # 꼭짓점만 닿아도 이웃으로 볼지
 DEF_NOTE = "도시 1,500명/km²·5만 명 이상, 준밀집 300명/km²·5천 명 이상"
 
 MAIN_RES = "1K"  # 지도·시도별 표에 쓰는 주 분석 설정 (도시화 등급은 1km 격자 기준)
-MAIN_THR = 300
+MAIN_THR = 1500
 SGG_MIN_AREA = 5  # 시군구 비교 시 최소 DID 면적(km²). 너무 작으면 격자 몇 개로 변화율이 요동친다.
 
 # 2015년부터 집계 대상이 내국인 → 내·외국인 전체 가구로 바뀜 (SGIS 유의사항)
@@ -70,19 +70,17 @@ SIDO = {
     "38": "경남", "39": "제주",
 }
 CAPITAL_REGION = ["11", "23", "31"]
-# 도시 확대도 대상: 도시화지역(300명/km²) 기준 2015→2024 순위에서 행정안전부 인구감소지역(92곳, 2026.10 시행)인 6곳
-#   밀도 감소율 Top 10: 완도군(1), 청도군(2), 양구군(8) / 비수도권 면적 증가율 Top 10 중 밀도 감소: 순창군(8)
-#   그다음 순위: 괴산군(밀도 11), 제천시(밀도 12, 면적 18)
-# 이름 → 2025년 시군구 경계에서 해당 지역을 고르는 조건 (모두 시·군 하나라 따로 강조할 구가 없다)
+# 도시 확대도 대상: 도시(1,500명/km²) 기준 2015→2024 밀도 감소율 Top 10 중 4곳
+#   인천 중구(5, 영종 신도시로 면적 +160%), 안동시(6), 광양시(7), 청주시 서원구(9)
+# 이름 → 2025년 시군구 경계에서 해당 지역을 고르는 조건
 CITY_ZOOMS = {
-    "완도": lambda s: s["SIGUNGU_NM"] == "완도군",
-    "청도": lambda s: s["SIGUNGU_NM"] == "청도군",
-    "양구": lambda s: s["SIGUNGU_NM"] == "양구군",
-    "순창": lambda s: s["SIGUNGU_NM"] == "순창군",
-    "괴산": lambda s: s["SIGUNGU_NM"] == "괴산군",
-    "제천": lambda s: s["SIGUNGU_NM"] == "제천시",
+    "안동": lambda s: s["SIGUNGU_NM"] == "안동시",
+    "광양": lambda s: s["SIGUNGU_NM"] == "광양시",
+    "청주": lambda s: s["SIGUNGU_NM"].str.startswith("청주시"),
+    "인천 중구": lambda s: (s["sido_cd"] == "23") & (s["SIGUNGU_NM"] == "중구"),
 }
-CITY_FOCUS = {}
+# 순위에 오른 시군구 (지도에서 따로 강조)
+CITY_FOCUS = {"청주": "청주시 서원구"}
 # 수도권 확대 지도 범위 (EPSG:5179). 시도 경계로 잡으면 서해 섬 때문에 너무 넓어져서 고정값을 쓴다.
 CAPITAL_BBOX = (900000, 1885000, 1060000, 2010000)
 
@@ -427,7 +425,7 @@ def draw_city_frame(ax, sigungu, city_geom, bbox, name=None):
         sel = city[city["SIGUNGU_NM"] == focus]
         sel.boundary.plot(ax=ax, color="#6a1b9a", linewidth=2.2, linestyle=(0, (4, 2)), zorder=4)
         pt = sel.geometry.iloc[0].representative_point()
-        ax.text(pt.x, pt.y, focus.replace("창원시 ", ""), color="#6a1b9a", fontsize=10, fontweight="bold",
+        ax.text(pt.x, pt.y, focus.split()[-1], color="#6a1b9a", fontsize=10, fontweight="bold",
                 ha="center", zorder=9, bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.75))
     ax.set_xlim(bbox[0], bbox[2])
     ax.set_ylim(bbox[1], bbox[3])
@@ -461,9 +459,9 @@ def plot_city_zoom(results, sigungu, region, name, res, thr, y0, y1):
 
 
 def plot_city_grid(results, sigungu, region, res, thr, y0, y1):
-    """6개 도시 변화 지도를 한 장에 모은다."""
+    """확대 분석 지역의 변화 지도를 한 장에 모은다."""
     names = list(CITY_ZOOMS)
-    ncol = 3
+    ncol = 3 if len(names) > 4 else 2
     nrow = -(-len(names) // ncol)
     fig, axes = plt.subplots(nrow, ncol, figsize=(18, 6.4 * nrow))
     for ax, name in zip(axes.flat, names):
@@ -484,26 +482,11 @@ def plot_city_grid(results, sigungu, region, res, thr, y0, y1):
 
 FACILITY_GPKG = DATA / "facilities" / "facilities.gpkg"
 # 점 레이어 그리기 스타일: (레이어, 조건, 범례 이름, matplotlib 스타일)
-SCHOOL_COLOR = "#00897b"
 FACILITY_STYLES = [
-    ("schools", lambda g: (g["subkind"] == "초등학교") & (g["found_year"] < 2000), "초등학교",
-     dict(marker="o", s=16, facecolor="white", edgecolor=SCHOOL_COLOR, linewidth=0.9)),
-    ("schools", lambda g: (g["subkind"] == "중학교") & (g["found_year"] < 2000), "중학교",
-     dict(marker="^", s=20, facecolor="white", edgecolor=SCHOOL_COLOR, linewidth=0.9)),
-    ("schools", lambda g: (g["subkind"] == "고등학교") & (g["found_year"] < 2000), "고등학교",
-     dict(marker="s", s=16, facecolor="white", edgecolor=SCHOOL_COLOR, linewidth=0.9)),
-    ("schools", lambda g: (g["subkind"] == "초등학교") & (g["found_year"] >= 2000), "초등학교 (2000년 이후 설립)",
-     dict(marker="o", s=18, facecolor=SCHOOL_COLOR, edgecolor="white", linewidth=0.4)),
-    ("schools", lambda g: (g["subkind"] == "중학교") & (g["found_year"] >= 2000), "중학교 (2000년 이후 설립)",
-     dict(marker="^", s=22, facecolor=SCHOOL_COLOR, edgecolor="white", linewidth=0.4)),
-    ("schools", lambda g: (g["subkind"] == "고등학교") & (g["found_year"] >= 2000), "고등학교 (2000년 이후 설립)",
-     dict(marker="s", s=18, facecolor=SCHOOL_COLOR, edgecolor="white", linewidth=0.4)),
+    ("university", lambda g: g.index == g.index, "대학교·전문대학",
+     dict(marker="p", s=90, facecolor="#00897b", edgecolor="white", linewidth=0.7)),
     ("health", lambda g: g["subkind"].isin(["보건소", "보건의료원"]), "보건소·보건의료원",
      dict(marker="P", s=80, facecolor="#d81b60", edgecolor="white", linewidth=0.6)),
-    ("health", lambda g: g["subkind"].isin(["보건지소", "보건진료소"]), "보건지소·보건진료소",
-     dict(marker="P", s=28, facecolor="#f48fb1", edgecolor="white", linewidth=0.4)),
-    ("townhall", lambda g: g["subkind"] == "읍면동", "읍면동 행정복지센터",
-     dict(marker="s", s=14, facecolor="#37474f", edgecolor="white", linewidth=0.3)),
     ("townhall", lambda g: g["subkind"].isin(["시군구", "시·도"]), "시·도청, 시·구·군청",
      dict(marker="*", s=230, facecolor="#111", edgecolor="white", linewidth=0.8)),
     ("urban_rail_station", lambda g: g.index == g.index, "도시철도역",
@@ -585,15 +568,12 @@ def facilities_in_did(results, sigungu, fac, res, thr, y0, y1):
     for name in CITY_ZOOMS:
         city, geom, _ = city_extent(sigungu, name, results, res, thr, (y0, y1))
         zones = {lbl.split(" (")[0]: g for g, _, lbl, *_ in change_layers(results, res, thr, y0, y1)}
-        for layer in ["schools", "health", "townhall", "station", "urban_rail_station", "terminal", "ic"]:
+        for layer in ["university", "health", "townhall", "station", "urban_rail_station", "terminal", "ic"]:
             g = fac.get(layer)
             if g is None:
                 continue
             g = g[(g["city"] == name) & g.within(geom)]
-            groups = [("전체", g)]
-            if layer == "schools":
-                groups.append(("2000년 이후 설립", g[g["found_year"] >= 2000]))
-            for sub, gg in groups:
+            for sub, gg in [("전체", g)]:
                 if gg.empty:
                     continue
                 row = {"city": name, "layer": layer, "group": sub, "total": len(gg)}
