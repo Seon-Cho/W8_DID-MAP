@@ -18,7 +18,6 @@ OUT = ROOT / "output"
 REPO = ROOT / "W8_DID-MAP"
 SITE = REPO / "site"
 MAX_SIDE = 2000
-SGG_MIN_AREA = 5  # did_analysis.SGG_MIN_AREA와 같게 (km²)
 Y0, Y1 = 2015, 2024
 CITIES = ["대구", "부산", "광주", "동해", "창원", "울산"]
 
@@ -60,9 +59,9 @@ def chart_data():
 
     dens = pd.read_csv(t / f"sigungu_density_change_{Y0}_{Y1}.csv").head(10)
     area = pd.read_csv(t / f"sigungu_area_change_{Y0}_{Y1}.csv")
-    # 면적 증가율 순위. 밀도 순위와 같이 두 해 모두 DID가 SGG_MIN_AREA 이상인 곳만 (격자 몇 개짜리 DID 제외)
-    area = area[~area["sido"].isin(["서울", "경기"]) & (area[f"area_{Y0}"] >= SGG_MIN_AREA)
-                & (area[f"area_{Y1}"] >= SGG_MIN_AREA)].sort_values("area_chg_pct", ascending=False).head(10)
+    # 면적 증가율 순위 (2015년에 DID가 없던 곳은 증가율을 낼 수 없어 빠진다)
+    area = area[~area["sido"].isin(["서울", "경기"])].dropna(subset=["area_chg_pct"]) \
+        .sort_values("area_chg_pct", ascending=False).head(10)
 
     mig = pd.read_csv(t / "migration_summary.csv")
     lost = pd.read_csv(t / "lost_did_destinations.csv")
