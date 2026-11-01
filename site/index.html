@@ -256,9 +256,9 @@ DID 인구밀도   D = P / A
   <div class="chart tall"><div class="box"><canvas id="c-topdens"></canvas></div></div>
   <p class="muted">2015·2024 두 해 모두 DID가 일정 면적 이상인 시군구 중 DID 밀도 감소율이 큰 순. 점선은 전국 DID 밀도 변화율. 진한 막대(★)는 수도권 4곳을 뺀 확대 분석 대상 6곳이다.</p>
 
-  <h3>4-4. DID 면적 증가율 Top 10 시군구 (서울·경기 제외, 전국 평균 대비)</h3>
+  <h3>4-4. DID 면적 증가율 Top 10 시군구 (수도권 제외, 전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-toparea"></canvas></div></div>
-  <p class="muted">DID 면적 증가율(%) 순위(2015년에 DID가 있던 시군구). 2015년 DID가 작은 곳은 격자 몇 개로도 비율이 크게 움직인다. 점선은 전국 DID 면적 증가율. 막대에 마우스를 올리면 증가 면적이 보인다.</p>
+  <p class="muted">비수도권(서울·경기·인천 제외) DID 면적 증가율(%) 순위(2015년에 DID가 있던 시군구). 진한 막대(▼)는 면적이 늘면서 DID 인구밀도는 낮아진 곳이다. 2015년 DID가 작은 곳은 격자 몇 개로도 비율이 크게 움직인다. 점선은 전국 DID 면적 증가율. 막대에 마우스를 올리면 증가 면적이 보인다.</p>
 
   <h3>4-5. 6개 도시 DID 지도</h3>
   <figure><img src="img/cities_change.webp" alt="6개 도시 DID 변화" loading="lazy">
@@ -399,9 +399,9 @@ lineChart("c-area", "did_area_km2", "DID 면적 (km²)", "km²");
 
 // 확대 분석한 6개 도시의 시군구 = 밀도 감소 Top 10 중 수도권(서울·경기·인천) 밖
 const FOCUS = (r) => !["서울", "경기", "인천"].includes(r.sido);
-const barChart = (id, rows, key, ref, refLabel, tip, color, mark = () => false) => new Chart(document.getElementById(id), {
+const barChart = (id, rows, key, ref, refLabel, tip, color, mark = () => false, sym = "★ ") => new Chart(document.getElementById(id), {
   type: "bar",
-  data: { labels: rows.map((r) => `${mark(r) ? "★ " : ""}${r.SIGUNGU_NM} (${r.sido})`),
+  data: { labels: rows.map((r) => `${mark(r) ? sym : ""}${r.SIGUNGU_NM} (${r.sido})`),
           datasets: [{ data: rows.map((r) => r[key]), backgroundColor: color, borderRadius: 4 }] },
   options: { indexAxis: "y", maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: tip } } },
@@ -421,7 +421,7 @@ barChart("c-toparea", D.top_area, "area_chg_pct", D.national.area_chg_pct,
   (c) => { const r = D.top_area[c.dataIndex];
     return [`면적 ${fmt(r.area_2015, 1)} → ${fmt(r.area_2024, 1)} km² (+${fmt(r.area_chg_km2, 1)} km², +${r.area_chg_pct}%)`,
             `밀도 변화 ${r.density_chg_pct > 0 ? "+" : ""}${r.density_chg_pct}%`]; },
-  "#e67e22");
+  D.top_area.map((r) => r.density_chg_pct < 0 ? "#e67e22" : "#f3d3b5"), (r) => r.density_chg_pct < 0, "▼ ");
 
 // 도시 탭
 const CITIES = ["대구", "부산", "광주", "동해", "창원", "울산"];

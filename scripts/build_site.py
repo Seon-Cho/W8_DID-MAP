@@ -59,8 +59,8 @@ def chart_data():
 
     dens = pd.read_csv(t / f"sigungu_density_change_{Y0}_{Y1}.csv").head(10)
     area = pd.read_csv(t / f"sigungu_area_change_{Y0}_{Y1}.csv")
-    # 면적 증가율 순위 (2015년에 DID가 없던 곳은 증가율을 낼 수 없어 빠진다)
-    area = area[~area["sido"].isin(["서울", "경기"])].dropna(subset=["area_chg_pct"]) \
+    # 비수도권 면적 증가율 순위 (2015년에 DID가 없던 곳은 증가율을 낼 수 없어 빠진다)
+    area = area[~area["sido"].isin(["서울", "경기", "인천"])].dropna(subset=["area_chg_pct"]) \
         .sort_values("area_chg_pct", ascending=False).head(10)
 
     mig = pd.read_csv(t / "migration_summary.csv")
