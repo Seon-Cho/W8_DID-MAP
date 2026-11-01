@@ -89,7 +89,7 @@ def chart_data():
 def repo_files():
     (REPO / "scripts").mkdir(parents=True, exist_ok=True)
     for f in ["did_analysis.py", "fetch_facilities.py", "migration_od.py", "migration_analysis.py",
-              "lost_did_flows.py", "build_site.py"]:
+              "lost_did_flows.py", "export_webmap.py", "build_site.py"]:
         shutil.copy2(ROOT / "scripts" / f, REPO / "scripts" / f)
     res = REPO / "results"
     (res / "tables").mkdir(parents=True, exist_ok=True)

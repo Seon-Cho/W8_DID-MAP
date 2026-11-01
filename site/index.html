@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DID 확장과 밀도 저하</title>
 <meta name="description" content="격자 인구로 추출한 인구집중지구(DID)로 본 2015~2024년 도시화 면적 확장과 인구밀도 저하, 비수도권 6개 도시의 인구 이동 방향 분석">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root {
@@ -89,6 +90,27 @@
   .finding p { margin: 4px 0 0; }
   footer { border-top: 1px solid var(--line); padding: 28px 16px 40px; color: var(--muted); font-size: 13.5px; }
   footer .in { max-width: 1120px; margin: 0 auto; }
+  .mapwrap { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; margin: 14px 0 8px; }
+  @media (max-width: 900px) { .mapwrap { grid-template-columns: 1fr; } }
+  #lmap { width: 100%; height: 640px; border-radius: 10px; border: 1px solid var(--line); background: #e9edf0; }
+  @media (max-width: 760px) { #lmap { height: 460px; } }
+  .map-ctl { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin-bottom: 10px; font-size: 14px; }
+  .map-ctl .tabs { margin: 0; }
+  .map-ctl label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .play { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+          border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .map-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+  .map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .side { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+          display: flex; flex-direction: column; gap: 10px; }
+  .side-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .side-head b { font-size: 18px; }
+  .side-head button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--chip); color: var(--ink);
+                      border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+  .side-sub { font-size: 13.5px; color: var(--muted); line-height: 1.6; }
+  .side .box { position: relative; height: 230px; }
+  .leaflet-container { font-family: "Pretendard Variable", Pretendard, sans-serif; }
+  .leaflet-tooltip.sgg-tip { font-size: 13px; padding: 3px 8px; }
 </style>
 </head>
 <body>
@@ -148,7 +170,7 @@
       <tr><td>행정동</td><td>vuski/admdongkor 행정동 경계(2016·2020·2024판)</td><td>MDIS 읍면동 코드의 위치. CC BY 4.0</td></tr>
       <tr><td>공공시설</td><td>공공데이터포털 학교·보건기관 표준데이터, 카카오 로컬 검색</td><td>초·중·고(설립연도), 보건소·보건지소, 시·구·군청, 행정복지센터, 버스터미널</td></tr>
       <tr><td>교통</td><td>국가철도공단 철도역, 국토교통부 도시철도 노선·표준노드링크, 한국도로공사 영업소 API, OpenStreetMap 철도</td><td>철도역·도시철도역, 고속도로 선형과 IC, 철도 선형</td></tr>
-      <tr><td>배경지도</td><td>Esri World Topographic Map, World Hillshade</td><td>지형·녹지 맥락(연하게)</td></tr>
+      <tr><td>배경지도</td><td>Esri World Topographic Map, World Hillshade (정적 지도), Esri Light Gray Canvas (동적 지도)</td><td>지형·녹지 맥락(연하게)</td></tr>
     </tbody></table></div>
   <h3>전처리 순서</h3>
   <ol class="steps">
@@ -198,9 +220,28 @@ DID 인구밀도   D = P / A
 <section id="viz">
   <h2><span class="no">4</span>공간 시각화 · 비공간 시각화</h2>
 
-  <h3>4-1. 전국 DID 지도</h3>
-  <figure><img src="img/did_change_national.webp" alt="전국 DID 변화 2015→2024 지도" loading="lazy">
-    <figcaption>2015→2024 DID 변화. 회색은 두 해 모두 DID, 주황은 2024년에 새로 DID, 빨간 테두리는 DID에서 빠진 곳(빈 네모).</figcaption></figure>
+  <h3>4-1. 전국 DID 동적 지도</h3>
+  <div class="mapwrap">
+    <div>
+      <div class="map-ctl">
+        <div class="tabs" role="tablist" id="map-time"></div>
+        <button class="play" id="map-play" type="button">▶ 재생</button>
+        <span><label><input type="checkbox" data-thr="2000" checked> 2,000명/km²</label>
+          <label><input type="checkbox" data-thr="4000"> 4,000명/km²</label></span>
+      </div>
+      <div id="lmap"></div>
+      <div class="map-legend" id="map-legend"></div>
+    </div>
+    <aside class="side">
+      <div class="side-head"><b id="side-title">전국</b><button id="side-reset" type="button" hidden>전국 보기</button></div>
+      <div class="side-sub" id="side-sub"></div>
+      <div class="box"><canvas id="c-sgg-area"></canvas></div>
+      <div class="box"><canvas id="c-sgg-dens"></canvas></div>
+    </aside>
+  </div>
+  <p class="muted">500m 격자 DID. 위 버튼으로 연도(2000~2024)나 2015→2024 변화를 고르고, 밀도 기준 2,000·4,000명/km²를 함께 켜면 한 지도에 겹쳐 보인다
+    (변화 보기에서 두 기준을 함께 켜면 4,000 기준은 점선 테두리). 시군구를 누르면 그 시군구로 확대되고 오른쪽 그래프가 그 시군구로 바뀐다.
+    그래프의 2010→2015 점선 구간은 SGIS 집계 기준 변경 구간이다. 배경지도 © Esri Light Gray Canvas (CARTO 키가 있으면 CARTO Positron).</p>
   <div class="grid2">
     <figure><img src="img/did_national_facets.webp" alt="연도별 전국 DID" loading="lazy">
       <figcaption>연도별 DID (500m 격자, 2,000명/km²).</figcaption></figure>
@@ -291,12 +332,14 @@ DID 인구밀도   D = P / A
   <p>코드와 결과 표, DID 폴리곤: <a href="https://github.com/Seon-Cho/W8_DID-MAP">github.com/Seon-Cho/W8_DID-MAP</a>.
     원자료(SGIS 격자 인구, MDIS 마이크로데이터, 카카오 검색 결과)는 제공 기관 이용 조건 때문에 저장소에 올리지 않았고, 받는 방법을 README에 적었다.</p>
   <p class="muted">자료: 통계청 SGIS 격자통계·도시화지역 경계, 통계청 국내인구이동통계(MDIS), 공공데이터포털, 국가철도공단, 국토교통부, 한국도로공사, 카카오 로컬,
-    OpenStreetMap 기여자, vuski/admdongkor(CC BY 4.0), Esri 배경지도.</p>
+    OpenStreetMap 기여자, vuski/admdongkor(CC BY 4.0), Esri·CARTO 배경지도.</p>
 </section>
 </main>
 <footer><div class="in">스마트시티 융합기술세미나 2026-2 · 과제 3 · DID MAP</div></footer>
 
 <script src="data.js"></script>
+<script src="carto-key.js" onerror="void 0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 const D = window.DID;
@@ -421,6 +464,163 @@ document.querySelectorAll(".tabs").forEach((t) => t.addEventListener("click", (e
   state[t.dataset.group] = b.dataset.v; render();
 }));
 render();
+
+// 전국 DID 동적 지도 (Leaflet + CARTO)
+(() => {
+  const YEARS = [2000, 2005, 2010, 2015, 2020, 2024], THRS = [2000, 4000];
+  const VIEWS = [...YEARS.map(String), "change"];
+  const st = { view: "2024", thr: new Set([2000]), sel: null, playing: null };
+  const FILL = { 2000: "#ee9b4f", 4000: "#b23a2b" };
+  const ZONE = { kept: ["#7f8c8d", "2015·2024 모두 DID"], new: ["#e67e22", "2024년 새로 DID"], lost: ["#d32f2f", "DID에서 빠짐(빈 네모)"] };
+  const DARK = { kept: "#2c3e50", new: "#9a4500", lost: "#7b0d0d" };
+
+  const map = L.map("lmap", { minZoom: 6, maxZoom: 15, zoomSnap: 0.5 }).setView([36.1, 127.8], 7);
+  map.createPane("did").style.zIndex = 410;
+  map.createPane("sgg").style.zIndex = 420;
+  map.createPane("labels").style.zIndex = 430;
+  map.getPane("labels").style.pointerEvents = "none";
+  // CARTO 배경은 API 키가 있어야 한다(carto-key.js: window.CARTO_KEY, 저장소에는 올리지 않음). 없으면 키가 필요 없는 Esri 회색 배경으로 대신한다.
+  if (window.CARTO_KEY) {
+    const carto = (k, o = {}) => L.tileLayer(`https://{s}.basemaps.cartocdn.com/${k}/{z}/{x}/{y}{r}.png?key=${window.CARTO_KEY}`,
+      { subdomains: "abcd", maxZoom: 19, ...o });
+    carto("light_nolabels", { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>' }).addTo(map);
+    carto("light_only_labels", { pane: "labels" }).addTo(map);
+  } else {
+    const esri = (k, o = {}) => L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${k}/MapServer/tile/{z}/{y}/{x}`,
+      { maxZoom: 16, ...o });
+    esri("World_Light_Gray_Base", { attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors" }).addTo(map);
+    esri("World_Light_Gray_Reference", { pane: "labels" }).addTo(map);
+  }
+  const renderer = L.canvas({ pane: "did", padding: 0.3 });
+  const didGroup = L.layerGroup().addTo(map);
+  const cache = {};
+  const load = (n) => (cache[n] ??= fetch(`map/${n}.geojson`).then((r) => r.json()));
+  let series = null, token = 0;
+
+  async function draw() {
+    const my = ++token, thrs = THRS.filter((t) => st.thr.has(t));
+    const names = thrs.map((t) => st.view === "change" ? `change_${t}` : `did_${t}_${st.view}`);
+    const data = await Promise.all(names.map(load));
+    if (my !== token) return;
+    didGroup.clearLayers();
+    data.forEach((gj, i) => {
+      const t = thrs[i], outline = st.view === "change" && i > 0;
+      const style = st.view !== "change"
+        ? () => ({ stroke: false, fillColor: FILL[t], fillOpacity: t === 4000 ? 0.7 : 0.6 })
+        : outline
+          ? (f) => ({ color: DARK[f.properties.z], weight: 1.6, dashArray: "4 3", fill: false })
+          : (f) => f.properties.z === "lost"
+            ? { color: ZONE.lost[0], weight: 1.4, fillColor: ZONE.lost[0], fillOpacity: 0.12 }
+            : { stroke: false, fillColor: ZONE[f.properties.z][0], fillOpacity: f.properties.z === "new" ? 0.85 : 0.65 };
+      didGroup.addLayer(L.geoJSON(gj, { renderer, interactive: false, style }));
+    });
+    legend(thrs);
+  }
+
+  function legend(thrs) {
+    const sw = (css) => `<i class="sw" style="${css}"></i>`;
+    let h = "";
+    if (st.view !== "change") {
+      h = thrs.map((t) => `<span>${sw(`background:${FILL[t]};opacity:${t === 4000 ? .8 : .7}`)}${st.view}년 DID · ${fmt(t)}명/km² 이상</span>`).join("");
+    } else {
+      const [a, b] = thrs;
+      if (a) h += Object.entries(ZONE).map(([z, [c, l]]) => `<span>${sw(z === "lost" ? `background:rgba(211,47,47,.12);border:2px solid ${c}` : `background:${c}`)}${l}</span>`).join("") + `<span>(${fmt(a)}명/km²)</span>`;
+      if (b) h += Object.entries(DARK).map(([z, c]) => `<span>${sw(`border:2px dashed ${c}`)}${ZONE[z][1]}</span>`).join("") + `<span>(${fmt(b)}명/km², 점선)</span>`;
+    }
+    document.getElementById("map-legend").innerHTML = h || "<span>밀도 기준을 하나 이상 켜세요.</span>";
+  }
+
+  // 시군구 경계: 마우스를 올리면 강조, 누르면 확대 + 그래프 전환
+  const base = { color: "#4a4f55", weight: 0.7, opacity: 0.55, fill: true, fillColor: "#000", fillOpacity: 0 };
+  const hover = { weight: 2, opacity: 0.9, fillOpacity: 0.04 };
+  const picked = { color: "#1d1d1f", weight: 3, opacity: 1, fillOpacity: 0 };
+  let sggLayer, selLayer = null;
+  load("sigungu").then((gj) => {
+    sggLayer = L.geoJSON(gj, { pane: "sgg", style: base, onEachFeature: (f, lyr) => {
+      lyr.bindTooltip(`${f.properties.sd} ${f.properties.nm}`, { sticky: true, className: "sgg-tip" });
+      lyr.on("mouseover", () => lyr !== selLayer && lyr.setStyle(hover));
+      lyr.on("mouseout", () => lyr !== selLayer && lyr.setStyle(base));
+      lyr.on("click", () => select(f, lyr));
+    } }).addTo(map);
+  });
+
+  function select(f, lyr) {
+    if (selLayer) selLayer.setStyle(base);
+    selLayer = lyr; lyr.setStyle(picked); lyr.bringToFront();
+    st.sel = f.properties;
+    map.fitBounds(lyr.getBounds(), { padding: [24, 24], maxZoom: 13 });
+    side();
+  }
+  document.getElementById("side-reset").addEventListener("click", () => {
+    if (selLayer) selLayer.setStyle(base);
+    selLayer = null; st.sel = null; map.setView([36.1, 127.8], 7); side();
+  });
+
+  // 오른쪽 그래프
+  const LINE = { 2000: "#d9822b", 4000: "#b23a2b" };
+  const mk = (id, title, unit) => new Chart(document.getElementById(id), {
+    type: "line",
+    data: { labels: YEARS, datasets: THRS.map((t) => ({ label: `${fmt(t)}명/km²`, data: [], borderColor: LINE[t],
+      backgroundColor: LINE[t], tension: 0.2, borderWidth: 2.2, spanGaps: false,
+      segment: { borderDash: (c) => c.p0DataIndex === 2 ? [4, 4] : undefined } })) },
+    options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { title: { display: true, text: title, color: css("--ink"), font: { size: 14, weight: 600 } },
+        legend: { labels: { boxWidth: 12, font: { size: 12 } } },
+        tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y == null ? "DID 없음" : fmt(c.parsed.y, unit === "km²" ? 1 : 0) + " " + unit}` } } },
+      scales: { y: { ticks: { callback: (v) => fmt(v) } } } },
+  });
+  const cArea = mk("c-sgg-area", "DID 면적 (km²)", "km²");
+  const cDens = mk("c-sgg-dens", "DID 인구밀도 (명/km²)", "명/km²");
+
+  function side() {
+    if (!series) return;
+    const p = st.sel, s = p ? series.sgg[p.cd] || {} : series.national;
+    document.getElementById("side-title").textContent = p ? `${p.sd} ${p.nm}` : "전국";
+    document.getElementById("side-reset").hidden = !p;
+    const cur = st.view === "change" ? -1 : YEARS.indexOf(+st.view);
+    [[cArea, "area"], [cDens, "dens"]].forEach(([ch, k]) => {
+      THRS.forEach((t, i) => {
+        const d = s[t];
+        const ds = ch.data.datasets[i];
+        ds.data = d ? (k === "area" ? d.area.map((a) => a || null) : d.area.map((a, j) => a ? Math.round(d.pop[j] / a) : null)) : YEARS.map(() => null);
+        ds.hidden = !st.thr.has(t);
+        ds.pointRadius = YEARS.map((_, j) => j === cur ? 6 : 3);
+      });
+      ch.update();
+    });
+    const d = s[2000], i0 = YEARS.indexOf(2015), i1 = YEARS.length - 1;
+    let txt = "시군구를 누르면 그 시군구의 그래프로 바뀐다.";
+    if (d && d.area[i0] && d.area[i1]) {
+      const D0 = d.pop[i0] / d.area[i0], D1 = d.pop[i1] / d.area[i1], pct = (a, b) => `${b >= a ? "+" : ""}${fmt(100 * (b / a - 1), 1)}%`;
+      txt = `2015→2024 (2,000명/km²) · 면적 ${fmt(d.area[i0], 1)} → ${fmt(d.area[i1], 1)} km² (${pct(d.area[i0], d.area[i1])}), ` +
+            `밀도 ${fmt(D0)} → ${fmt(D1)} 명/km² (${pct(D0, D1)})` + (p ? "" : ". " + txt);
+    } else if (p) txt = d ? "2015 또는 2024년에 DID가 없어 변화율을 계산하지 않았다." : "2000~2024년 DID가 없는 시군구다.";
+    document.getElementById("side-sub").textContent = txt;
+  }
+  fetch("map/series.json").then((r) => r.json()).then((j) => { series = j; side(); });
+
+  // 시점·기준 컨트롤
+  const time = document.getElementById("map-time");
+  time.innerHTML = VIEWS.map((v) => `<button data-v="${v}">${v === "change" ? "변화 2015→2024" : v}</button>`).join("");
+  const setView = (v) => {
+    st.view = v;
+    time.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.v === v)));
+    draw(); side();
+  };
+  time.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { stop(); setView(b.dataset.v); } });
+  document.querySelectorAll(".map-ctl input[data-thr]").forEach((cb) => cb.addEventListener("change", () => {
+    cb.checked ? st.thr.add(+cb.dataset.thr) : st.thr.delete(+cb.dataset.thr); draw(); side();
+  }));
+  const playBtn = document.getElementById("map-play");
+  const stop = () => { clearInterval(st.playing); st.playing = null; playBtn.textContent = "▶ 재생"; };
+  playBtn.addEventListener("click", () => {
+    if (st.playing) return stop();
+    let i = st.view === "change" || st.view === "2024" ? -1 : YEARS.indexOf(+st.view);
+    const step = () => { i += 1; if (i >= YEARS.length) return stop(); setView(String(YEARS[i])); };
+    playBtn.textContent = "■ 정지"; step(); st.playing = setInterval(step, 1500);
+  });
+  setView("2024");
+})();
 </script>
 </body>
 </html>
