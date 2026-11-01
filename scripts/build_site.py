@@ -18,14 +18,16 @@ OUT = ROOT / "output"
 REPO = ROOT / "W8_DID-MAP"
 SITE = REPO / "site"
 MAX_SIDE = 2000
-CITIES = ["부산", "대구", "광주", "창원", "목포", "남원"]
+Y0, Y1 = 2015, 2024
+CITIES = ["대구", "부산", "광주", "동해", "창원", "울산"]
 
 IMAGES = {
     "maps/did_500M_2000_national.png": "did_national_facets",
-    "maps/did_change_2000_2024_500M_2000_national.png": "did_change_national",
-    "maps/did_change_2000_2024_500M_2000_capital.png": "did_change_capital",
+    "maps/did_change_2015_2024_500M_2000_national.png": "did_change_national",
+    "maps/did_change_2015_2024_500M_2000_capital.png": "did_change_capital",
+    "maps/did_change_2000_2024_500M_2000_national.png": "did_change_national_2000",
     "maps/compare_overlay_2024_500M_national.png": "compare_sgis_2024",
-    "maps/cities/cities_change_2000_2024_500M_2000.png": "cities_change",
+    "maps/cities/cities_change_2015_2024_500M_2000.png": "cities_change",
     "maps/migration/migration_trends.png": "migration_trends",
     "maps/migration/lost_did_destinations.png": "lost_did_destinations",
 }
@@ -49,16 +51,16 @@ def chart_data():
     t = OUT / "tables"
     summ = pd.read_csv(t / "did_summary.csv")
     s = summ[(summ["res"] == "500M") & (summ["threshold"] == 2000)].set_index("year")
-    nat_density = 100 * (s["did_density"].iloc[-1] / s["did_density"].iloc[0] - 1)
-    nat_area = 100 * (s["did_area_km2"].iloc[-1] / s["did_area_km2"].iloc[0] - 1)
+    nat_density = 100 * (s.loc[Y1, "did_density"] / s.loc[Y0, "did_density"] - 1)
+    nat_area = 100 * (s.loc[Y1, "did_area_km2"] / s.loc[Y0, "did_area_km2"] - 1)
 
     reg = pd.read_csv(t / "did_density_by_region.csv")
     reg = reg[reg["threshold"] == 2000]
     series = {r: g.sort_values("year")[["year", "did_area_km2", "did_pop", "did_density"]].to_dict("list")
               for r, g in reg.groupby("region", sort=False)}
 
-    dens = pd.read_csv(t / "sigungu_density_change_2000_2024.csv").head(10)
-    area = pd.read_csv(t / "sigungu_area_change_2000_2024.csv")
+    dens = pd.read_csv(t / f"sigungu_density_change_{Y0}_{Y1}.csv").head(10)
+    area = pd.read_csv(t / f"sigungu_area_change_{Y0}_{Y1}.csv")
     area = area[~area["sido"].isin(["서울", "경기"])].head(10)
 
     mig = pd.read_csv(t / "migration_summary.csv")
@@ -70,11 +72,12 @@ def chart_data():
     data = {
         "summary": s.reset_index()[["year", "n_did", "did_area_km2", "did_pop", "did_density", "pop_share_pct"]]
         .to_dict("list"),
+        "period": [Y0, Y1],
         "national": {"density_chg_pct": round(nat_density, 1), "area_chg_pct": round(nat_area, 1)},
         "regions": series,
-        "top_density": dens[["sido", "SIGUNGU_NM", "density_2000", "density_2024", "density_chg_pct",
+        "top_density": dens[["sido", "SIGUNGU_NM", f"density_{Y0}", f"density_{Y1}", "density_chg_pct",
                              "area_chg_pct", "pop_chg_pct"]].to_dict("records"),
-        "top_area": area[["sido", "SIGUNGU_NM", "area_2000", "area_2024", "area_chg_km2", "area_chg_pct",
+        "top_area": area[["sido", "SIGUNGU_NM", f"area_{Y0}", f"area_{Y1}", "area_chg_km2", "area_chg_pct",
                           "density_chg_pct"]].to_dict("records"),
         "migration": mig[["city", "year", "core_net_out_ring_per1000", "outward_share"]].round(1)
         .to_dict("records"),

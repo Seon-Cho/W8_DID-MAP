@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DID 확장과 밀도 저하</title>
-<meta name="description" content="격자 인구로 추출한 인구집중지구(DID)로 본 2000~2024년 도시화 면적 확장과 인구밀도 저하, 6개 도시의 인구 이동 방향 분석">
+<meta name="description" content="격자 인구로 추출한 인구집중지구(DID)로 본 2015~2024년 도시화 면적 확장과 인구밀도 저하, 비수도권 6개 도시의 인구 이동 방향 분석">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root {
@@ -100,8 +100,8 @@
 <header>
   <div class="kicker">스마트시티 융합기술세미나 · 과제 3</div>
   <h1>도시는 넓어지고, 밀도는 낮아진다</h1>
-  <p class="lead">격자 인구로 그린 인구집중지구(DID)로 2000~2024년 한국의 도시화를 다시 읽는다.
-    시가지 면적은 계속 늘었지만 그 안의 인구밀도는 꾸준히 낮아졌다. 6개 도시에서 어디가 새로 시가지가 되고 어디가 비었는지,
+  <p class="lead">격자 인구로 그린 인구집중지구(DID)로 2015~2024년 한국의 도시화를 다시 읽는다.
+    시가지 면적은 계속 늘었지만 그 안의 인구밀도는 꾸준히 낮아졌다. DID 밀도가 가장 많이 떨어진 비수도권 6개 도시에서 어디가 새로 시가지가 되고 어디가 비었는지,
     사람들은 어느 방향으로 움직였는지 함께 살펴본다.</p>
   <div class="stats" id="stats"></div>
 </header>
@@ -110,15 +110,29 @@
 <!-- 1 -->
 <section id="q">
   <h2><span class="no">1</span>연구 질문 및 분석 대상</h2>
-  <p><b>분석 대상</b>: 전국(시군구 단위 비교)과 인구 감소 지역. 인구 감소 지역을 대표하는 6개 도시
-    <b>남원·목포·부산·대구·광주·창원</b>을 골라 확대 분석했다. 모두 2000→2024년에 DID 면적은 늘었지만 DID 인구밀도는 떨어진 곳이다.</p>
+  <p><b>분석 기간</b>: 2015→2024년. SGIS 격자 인구가 2015년부터 등록센서스 기준으로 바뀌어, 그 전후를 잇는 증감에는 집계 기준 변경 효과가 섞인다.
+    같은 기준으로 비교할 수 있는 2015년을 출발점으로 삼았다(2000년부터의 장기 추세는 참고로만 제시).</p>
+  <p><b>분석 대상</b>: 전국(시군구 단위 비교)과, 2015→2024 DID 인구밀도 감소율 Top 10 시군구 중 수도권(광명·의왕·성남 수정·군포)을 뺀 6곳이다.
+    해당 시군구가 속한 도시 전체를 확대 분석했다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th class="num">순위</th><th>시군구</th><th class="num">DID 밀도 변화</th><th>확대 분석 범위</th></tr></thead>
+    <tbody>
+      <tr><td class="num">3</td><td>대구 서구</td><td class="num neg">−18.7%</td><td>대구광역시 (군위군 제외)</td></tr>
+      <tr><td class="num">5</td><td>부산 영도구</td><td class="num neg">−17.7%</td><td>부산광역시</td></tr>
+      <tr><td class="num">6</td><td>광주 남구</td><td class="num neg">−17.0%</td><td>광주광역시</td></tr>
+      <tr><td class="num">7</td><td>강원 동해시</td><td class="num neg">−16.8%</td><td>동해시</td></tr>
+      <tr><td class="num">9</td><td>창원시 마산합포구</td><td class="num neg">−16.5%</td><td>창원시 (5개 구)</td></tr>
+      <tr><td class="num">10</td><td>울산 울주군</td><td class="num neg">−16.4%</td><td>울산광역시</td></tr>
+    </tbody></table></div>
+  <p class="muted">기간을 2000→2024에서 2015→2024로 바꾸면서 순위가 달라졌다. 이전 분석의 남원(12위)과 목포(15위)는 Top 10 밖으로 밀려났고,
+    동해·울산(울주군)이 새로 들어왔다. 지도에서는 순위에 든 시군구를 보라색 점선으로 표시했다.</p>
   <div class="q"><b>연구 질문 1</b> · 도시화 지역의 면적과 인구밀도는 어떤 관계인가?<br>
     <span class="muted">가설: 시간에 따라 도시화 면적은 커지지만 인구밀도는 감소하며, 비효율적인 도시화가 진행 중이다.</span></div>
   <div class="q"><b>연구 질문 2</b> · 기존 공공시설과 교통 인프라의 접근성·중심성에 따라 축소의 방향을 정할 수 있을까?<br>
     <span class="muted">빈집 문제 해결의 우선순위, 공공 인프라 축소의 기준 설정 등</span></div>
   <p class="note"><b>스펀지화(sponge city)</b> · 도시 내부에 빈 땅·빈집 같은 저이용 공간이 시간적·공간적으로 무작위하게 상당량 생기는 현상.
     생산성 저하, 행정서비스 비효율, 도시 매력 저하를 부른다. 구멍을 메우고 새 구멍이 생기지 않게 하는 노력이 필요하다.
-    이 분석에서 <b>“빈 네모”</b>(2000년에는 DID였지만 2024년에는 빠진 격자)가 그 구멍에 해당한다.</p>
+    이 분석에서 <b>“빈 네모”</b>(2015년에는 DID였지만 2024년에는 빠진 격자)가 그 구멍에 해당한다.</p>
 </section>
 
 <!-- 2 -->
@@ -130,8 +144,8 @@
       <tr><td>인구</td><td>SGIS 격자 통계(인구) 500m·1km</td><td>2000·2005·2010·2015·2020·2024년 격자별 총인구. DID 추출의 기본 자료</td></tr>
       <tr><td>경계</td><td>SGIS 격자 경계(2025), 센서스용 시군구 경계(2025 2Q)</td><td>격자 면적, 시군구 집계와 도시 범위</td></tr>
       <tr><td>비교</td><td>SGIS 도시화지역 경계(2015·2020·2024)</td><td>통계청 도시·준도시 구분과 DID 비교</td></tr>
-      <tr><td>인구 이동</td><td>통계청 국내인구이동통계 MDIS 마이크로데이터</td><td>2005·2010·2015·2020·2024 인구관련 연간자료(전입·전출 읍면동, 사유, 연령), 2000 서머리(시군구 OD)</td></tr>
-      <tr><td>행정동</td><td>vuski/admdongkor 행정동 경계(2012·2016·2020·2024판)</td><td>MDIS 읍면동 코드의 위치. CC BY 4.0</td></tr>
+      <tr><td>인구 이동</td><td>통계청 국내인구이동통계 MDIS 마이크로데이터</td><td>2015·2020·2024 인구관련 연간자료(전입·전출 읍면동, 사유, 연령)</td></tr>
+      <tr><td>행정동</td><td>vuski/admdongkor 행정동 경계(2016·2020·2024판)</td><td>MDIS 읍면동 코드의 위치. CC BY 4.0</td></tr>
       <tr><td>공공시설</td><td>공공데이터포털 학교·보건기관 표준데이터, 카카오 로컬 검색</td><td>초·중·고(설립연도), 보건소·보건지소, 시·구·군청, 행정복지센터, 버스터미널</td></tr>
       <tr><td>교통</td><td>국가철도공단 철도역, 국토교통부 도시철도 노선·표준노드링크, 한국도로공사 영업소 API, OpenStreetMap 철도</td><td>철도역·도시철도역, 고속도로 선형과 IC, 철도 선형</td></tr>
       <tr><td>배경지도</td><td>Esri World Topographic Map, World Hillshade</td><td>지형·녹지 맥락(연하게)</td></tr>
@@ -140,12 +154,12 @@
   <ol class="steps">
     <li><b>격자 인구 정리</b> · SGIS 자료신청 원본에서 연도·해상도별 총인구(to_in_001)를 뽑아 격자 경계와 붙였다(EPSG:5179).</li>
     <li><b>DID 추출</b> · 인구밀도 기준(2,000 / 4,000명/km²) 이상 격자를 고르고, 변을 맞댄(rook) 격자끼리 묶어 인구 5,000명 이상인 덩어리만 DID로 남겼다(일본 국세조사 DID 방식 차용).</li>
-    <li><b>변화 구역</b> · 2000·2024 DID를 겹쳐 유지(둘 다 DID), 신규(2024에만), 빈 네모(2000에만)로 나눴다.</li>
+    <li><b>변화 구역</b> · 2015·2024 DID를 겹쳐 유지(둘 다 DID), 신규(2024에만), 빈 네모(2015에만)로 나눴다.</li>
     <li><b>시설·교통 위치</b> · 좌표가 없는 시설은 카카오 로컬 검색(없으면 Nominatim)으로 위치를 찾고 분류명으로 걸렀다. 결과는 캐시에 저장해 재실행 때 다시 검색하지 않는다.</li>
     <li><b>인구 이동표</b> · MDIS 원자료(약 2.6GB)를 압축을 풀지 않고 읽어 시군구·읍면동 OD로 집계했다. 같은 읍면동 안 이사를 빼면 연도별 합계가 공식 이동자 수와 정확히 같다(2024년 6,283,319명).</li>
     <li><b>코드 맞추기</b> · 연도마다 다른 행정 코드를 2025 시군구로 맞췄다(창원 통합 전 창원·마산·진해는 창원시 하나로, 출장소는 본청으로). 읍면동은 경계 판과 MDIS 중심점으로 찾았다.</li>
   </ol>
-  <p class="note">2010→2015 사이 SGIS 격자 인구 집계 기준이 바뀌어(등록센서스 전환) 그 구간의 증감은 일부 기준 변경 효과를 포함한다. 시계열 해석 시 이 점을 감안해야 한다.</p>
+  <p class="note">2010→2015 사이 SGIS 격자 인구 집계 기준이 바뀌었다(등록센서스 전환). 그래서 변화 분석은 2015→2024로 하고, 2000~2010 값은 시계열 차트에서 참고로만 보여 준다.</p>
 </section>
 
 <!-- 3 -->
@@ -157,7 +171,7 @@ DID 후보       dᵢ ≥ θ                              (θ = 2,000 또는 4,0
 DID 덩어리     k = rook 인접으로 이어진 후보 격자 묶음,  Σ_{i∈k} Pᵢ ≥ 5,000명
 DID 면적       A = Σ_k Σ_{i∈k} Aᵢ        DID 인구  P = Σ_k Σ_{i∈k} Pᵢ
 DID 인구밀도   D = P / A
-밀도 변화율    ΔD(%) = (D₂₀₂₄ / D₂₀₀₀ − 1) × 100,   전국 대비(%p) = ΔD시군구 − ΔD전국</div>
+밀도 변화율    ΔD(%) = (D₂₀₂₄ / D₂₀₁₅ − 1) × 100,   전국 대비(%p) = ΔD시군구 − ΔD전국</div>
   <h3>인구 이동 방향</h3>
   <div class="formula">순유출률(‰)     = (중심도시→주변 이동자 − 주변→중심도시 이동자) / 중심도시 인구 × 1,000
 바깥쪽 이동 비율 = Σ(도착지가 시청에서 출발지보다 1km 이상 먼 이동) / Σ(시청 거리 차가 1km 이상인 이동)
@@ -167,15 +181,15 @@ DID 인구밀도   D = P / A
   <div class="table-wrap"><table id="tbl-summary"></table></div>
   <h3>산출 결과 · 6개 도시 (시 경계 안 DID)</h3>
   <div class="table-wrap"><table>
-    <thead><tr><th>도시</th><th class="num">DID 면적 2000</th><th class="num">2024</th><th class="num">면적 변화</th>
-      <th class="num">DID 밀도 2000</th><th class="num">2024</th><th class="num">밀도 변화</th></tr></thead>
+    <thead><tr><th>도시</th><th class="num">DID 면적 2015</th><th class="num">2024</th><th class="num">면적 변화</th>
+      <th class="num">DID 밀도 2015</th><th class="num">2024</th><th class="num">밀도 변화</th></tr></thead>
     <tbody>
-      <tr><td>남원</td><td class="num">5.2 km²</td><td class="num">7.8</td><td class="num pos">+47.6%</td><td class="num">8,464</td><td class="num">5,124</td><td class="num neg">−39.5%</td></tr>
-      <tr><td>목포</td><td class="num">16.5</td><td class="num">22.2</td><td class="num pos">+34.8%</td><td class="num">13,956</td><td class="num">9,202</td><td class="num neg">−34.1%</td></tr>
-      <tr><td>창원</td><td class="num">66.5</td><td class="num">83.2</td><td class="num pos">+25.2%</td><td class="num">14,340</td><td class="num">10,946</td><td class="num neg">−23.7%</td></tr>
-      <tr><td>광주</td><td class="num">78.8</td><td class="num">109.2</td><td class="num pos">+38.7%</td><td class="num">15,952</td><td class="num">12,649</td><td class="num neg">−20.7%</td></tr>
-      <tr><td>대구</td><td class="num">137.5</td><td class="num">162.5</td><td class="num pos">+18.2%</td><td class="num">16,917</td><td class="num">13,883</td><td class="num neg">−17.9%</td></tr>
-      <tr><td>부산</td><td class="num">177.2</td><td class="num">195.8</td><td class="num pos">+10.4%</td><td class="num">19,447</td><td class="num">16,017</td><td class="num neg">−17.6%</td></tr>
+      <tr><td>동해</td><td class="num">8.5 km²</td><td class="num">11.2</td><td class="num pos">+32.4%</td><td class="num">7,427</td><td class="num">6,183</td><td class="num neg">−16.8%</td></tr>
+      <tr><td>울산</td><td class="num">79.0</td><td class="num">85.8</td><td class="num pos">+8.5%</td><td class="num">13,284</td><td class="num">11,564</td><td class="num neg">−12.9%</td></tr>
+      <tr><td>광주</td><td class="num">101.5</td><td class="num">109.2</td><td class="num pos">+7.6%</td><td class="num">14,255</td><td class="num">12,649</td><td class="num neg">−11.3%</td></tr>
+      <tr><td>창원</td><td class="num">78.0</td><td class="num">83.2</td><td class="num pos">+6.7%</td><td class="num">12,335</td><td class="num">10,946</td><td class="num neg">−11.3%</td></tr>
+      <tr><td>대구</td><td class="num">152.8</td><td class="num">162.5</td><td class="num pos">+6.4%</td><td class="num">15,512</td><td class="num">13,883</td><td class="num neg">−10.5%</td></tr>
+      <tr><td>부산</td><td class="num">193.5</td><td class="num">195.8</td><td class="num pos">+1.2%</td><td class="num">17,172</td><td class="num">16,017</td><td class="num neg">−6.7%</td></tr>
     </tbody></table></div>
   <p class="muted">밀도 단위: 명/km². 대구는 2023년 편입된 군위군 제외, 창원은 5개 구 합계.</p>
 </section>
@@ -185,25 +199,27 @@ DID 인구밀도   D = P / A
   <h2><span class="no">4</span>공간 시각화 · 비공간 시각화</h2>
 
   <h3>4-1. 전국 DID 지도</h3>
-  <figure><img src="img/did_change_national.webp" alt="전국 DID 변화 2000→2024 지도" loading="lazy">
-    <figcaption>2000→2024 DID 변화. 회색은 두 해 모두 DID, 주황은 2024년에 새로 DID, 빨간 테두리는 DID에서 빠진 곳(빈 네모).</figcaption></figure>
+  <figure><img src="img/did_change_national.webp" alt="전국 DID 변화 2015→2024 지도" loading="lazy">
+    <figcaption>2015→2024 DID 변화. 회색은 두 해 모두 DID, 주황은 2024년에 새로 DID, 빨간 테두리는 DID에서 빠진 곳(빈 네모).</figcaption></figure>
   <div class="grid2">
     <figure><img src="img/did_national_facets.webp" alt="연도별 전국 DID" loading="lazy">
       <figcaption>연도별 DID (500m 격자, 2,000명/km²).</figcaption></figure>
     <figure><img src="img/did_change_capital.webp" alt="수도권 DID 변화" loading="lazy">
-      <figcaption>수도권 확대. 신도시·택지개발지구가 주황 덩어리로 드러난다.</figcaption></figure>
+      <figcaption>수도권 확대(2015→2024). 신도시·택지개발지구가 주황 덩어리로 드러난다.</figcaption></figure>
   </div>
+  <figure><img src="img/did_change_national_2000.webp" alt="전국 DID 변화 2000→2024 지도 (참고)" loading="lazy">
+    <figcaption>참고: 2000→2024 장기 변화. 2010→2015 집계 기준 변경 효과가 섞여 있다.</figcaption></figure>
 
   <h3>4-2. DID 인구밀도 변화 시계열</h3>
   <div class="grid2">
     <div class="chart"><div class="box"><canvas id="c-density"></canvas></div></div>
     <div class="chart"><div class="box"><canvas id="c-area"></canvas></div></div>
   </div>
-  <p class="muted">비수도권 = 서울·경기·인천 제외. 세 지역 모두 면적은 늘고 밀도는 내려간다.</p>
+  <p class="muted">비수도권 = 서울·경기·인천 제외. 2010→2015 사이 집계 기준이 바뀌었으므로 분석은 2015 이후 구간(2015·2020·2024)으로 한다. 세 지역 모두 면적은 늘고 밀도는 내려간다.</p>
 
   <h3>4-3. 인구밀도 변화 Top 10 시군구 (전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-topdens"></canvas></div></div>
-  <p class="muted">2000·2024 두 해 모두 DID가 일정 면적 이상인 시군구 중 DID 밀도 감소율이 큰 순. 점선은 전국 DID 밀도 변화율.</p>
+  <p class="muted">2015·2024 두 해 모두 DID가 일정 면적 이상인 시군구 중 DID 밀도 감소율이 큰 순. 점선은 전국 DID 밀도 변화율. 수도권 4곳을 뺀 6곳이 확대 분석 대상이다.</p>
 
   <h3>4-4. DID 면적 최대 변화 Top 10 시군구 (서울·경기 제외, 전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-toparea"></canvas></div></div>
@@ -211,7 +227,7 @@ DID 인구밀도   D = P / A
 
   <h3>4-5. 6개 도시 DID 지도</h3>
   <figure><img src="img/cities_change.webp" alt="6개 도시 DID 변화" loading="lazy">
-    <figcaption>6개 도시 한눈에 보기. 기존 시가지 가장자리와 안쪽에 빈 네모가 흩어지고, 외곽 도로·IC 쪽에 신규 DID가 붙는다.</figcaption></figure>
+    <figcaption>6개 도시 한눈에 보기(2015→2024). 보라색 점선은 밀도 감소율 Top 10에 든 시군구. 기존 시가지 가장자리와 안쪽에 빈 네모가 흩어지고, 외곽 택지에 신규 DID가 붙는다.</figcaption></figure>
   <div class="tabs" role="tablist" data-group="city"></div>
   <div class="tabs" role="tablist" data-group="cityview">
     <button data-v="city" aria-selected="true">DID 변화 · 도시지역 정의 비교</button>
@@ -222,7 +238,7 @@ DID 인구밀도   D = P / A
 
   <h3>4-6. 6개 도시 인구 이동 네트워크와 DID 제외 지역의 관계</h3>
   <figure><img src="img/migration_trends.webp" alt="중심 도시 순유출과 바깥쪽 이동 비율" loading="lazy">
-    <figcaption>왼쪽: 중심 도시에서 주변 시군구로의 순유출(인구 1천 명당). 오른쪽: 도시권 안 시군구 간 이동 중 시청에서 멀어지는 이동의 비율(50% 위면 교외 쪽 우세).</figcaption></figure>
+    <figcaption>2015·2020·2024년. 왼쪽: 중심 도시에서 주변 시군구로의 순유출(인구 1천 명당). 오른쪽: 도시권 안 시군구 간 이동 중 시청에서 멀어지는 이동의 비율(50% 위면 교외 쪽 우세).</figcaption></figure>
   <div class="tabs" role="tablist" data-group="city2"></div>
   <div class="tabs" role="tablist" data-group="flowview">
     <button data-v="flows" aria-selected="true">시군구 간 이동 네트워크</button>
@@ -230,7 +246,7 @@ DID 인구밀도   D = P / A
   </div>
   <figure><img id="img-flow" alt="" loading="lazy"><figcaption id="cap-flow"></figcaption></figure>
   <figure><img src="img/lost_did_destinations.webp" alt="빈 네모 이동자 도착지 비교" loading="lazy">
-    <figcaption>빈 네모에서 나간 이동자(추정)와 도시 전체 이동자의 도착지 비교. 두 막대가 거의 같다.</figcaption></figure>
+    <figcaption>빈 네모에서 나간 이동자(추정)와 도시 전체 이동자의 도착지 비교. 창원을 빼면 두 막대가 거의 같다.</figcaption></figure>
 </section>
 
 <!-- 5 -->
@@ -238,32 +254,36 @@ DID 인구밀도   D = P / A
   <h2><span class="no">5</span>주요 결과 해석</h2>
   <div class="finding"><div class="n">1</div><div>
     <h4>도시화 면적은 커지고 인구밀도는 낮아졌다 — 가설 지지</h4>
-    <p>전국 DID 면적은 2000년 2,317km²에서 2024년 3,339km²로 <b>44% 늘었지만</b> DID 인구는 21% 늘어나는 데 그쳐,
-      DID 밀도는 15,886명에서 13,357명으로 <b>16% 낮아졌다</b>. 수도권(−19%)과 비수도권(−16%) 모두 같은 방향이며,
-      4,000명/km² 기준과 1km 격자에서도 결과가 같다. 같은 인구를 더 넓은 시가지가 담는, 효율이 떨어지는 도시화가 이어지고 있다.</p></div></div>
+    <p>전국 DID 면적은 2015년 2,971km²에서 2024년 3,339km²로 <b>12.4% 늘었지만</b> DID 인구는 2.7% 늘어나는 데 그쳐,
+      DID 밀도는 14,610명에서 13,357명으로 <b>8.6% 낮아졌다</b>. 수도권(면적 +15.4%, 밀도 −9.5%)과 비수도권(+10.1%, −8.5%) 모두 같은 방향이며,
+      4,000명/km² 기준(−8.0%)과 1km 격자(−7.1%)에서도 결과가 같다. 같은 인구를 더 넓은 시가지가 담는, 효율이 떨어지는 도시화가 이어지고 있다.</p></div></div>
   <div class="finding"><div class="n">2</div><div>
-    <h4>6개 도시: 기존 시가지는 비고, 도시는 바깥으로 넓어졌다</h4>
-    <p>6개 도시 모두 DID 면적이 10~48% 늘고 밀도는 18~40% 줄었다. 남원(면적 +48%, 밀도 −40%)과 목포(+35%, −34%)가 가장 극단적이다.
-      빈 네모는 기존 시가지 가장자리와 안쪽에 흩어져 생기고(스펀지화), 신규 DID는 고속도로 IC·간선도로 쪽 외곽 택지에 덩어리로 붙는다.
-      2000년 이후 설립된 학교의 상당수가 신규 DID에 있다(광주 90곳 중 50, 부산 101곳 중 51, 대구 108곳 중 44).</p></div></div>
+    <h4>밀도 저하에는 두 갈래가 있다 — 넓어지며 묽어지는 곳, 그대로인데 비는 곳</h4>
+    <p>6개 도시 모두 DID 면적은 1~32% 늘고 밀도는 7~17% 줄었다. 동해(면적 +32%, 밀도 −17%)가 가장 극단적이고 울산(+8.5%, −12.9%)이 뒤를 잇는다.
+      그런데 순위에 든 시군구를 보면 성격이 갈린다. <b>대구 서구·부산 영도구</b>는 DID 면적이 그대로인데 인구가 18% 줄어든 순수한 공동화(스펀지화)이고,
+      <b>동해시·울주군·마산합포구·광주 남구</b>는 DID가 14~32% 넓어지면서 밀도가 떨어진 확장형이다.
+      시설 입지도 비슷하다. 학교·청사·도시철도역의 대부분은 유지 DID에 있고, 2015→2024에 새로 DID가 된 곳에 든 학교는 도시별 2~16곳뿐이다.</p></div></div>
   <div class="finding"><div class="n">3</div><div>
-    <h4>인구 이동 네트워크: 교외화는 도시마다 다르게 진행된다</h4>
-    <p><b>목포</b>는 무안(남악·오룡 신도시)으로의 순유출이 2020년 인구 1천 명당 18명에 이르고, 그 이동의 약 절반이 주택 사유다.
-      <b>창원</b>은 김해로, <b>부산</b>은 김해·양산으로 꾸준히 빠져나가며, <b>광주</b>는 2015년 이후 나주(혁신도시)·담양·장성 쪽으로 돌아섰다.
-      반면 <b>대구</b>는 2000년 달서·달성 쪽 바깥 흐름에서 2024년 수성·중구 쪽 안쪽 흐름으로 바뀌었고, <b>남원</b>은 주변 군이 아니라 도시권 밖 먼 곳으로 인구가 빠진다.</p></div></div>
+    <h4>인구 이동 네트워크: 교외화는 2015년 이후 대부분 약해졌다</h4>
+    <p><b>부산</b>은 양산으로의 순유출이 꾸준하고(2015년 5,864명 → 2024년 4,447명) 2024년에는 김해가 더해졌다.
+      <b>광주</b>는 2015년 나주(빛가람 혁신도시)로 4,437명이 순유출됐지만 2024년에는 86명으로 사실상 멈췄다(인구 1천 명당 2.9 → 0.3명).
+      <b>창원</b>도 2015년 부산 강서(명지)·김해로의 유출(1천 명당 4.0명)이 2024년 김해 한 곳(1.0명)으로 줄었다.
+      <b>대구</b>는 2015년 경산 쪽 바깥 흐름에서 2024년 구미·칠곡에서 들어오는 순유입(−1.0명)으로 돌아섰고, 시청에서 멀어지는 이동 비율도 52.5%에서 45.6%로 내려갔다.
+      <b>울산</b>은 양산·기장으로의 유출이 2020년(2.8명)에 가장 컸다. <b>동해</b>는 주변 교외로 빠지는 흐름이 없고 오히려 삼척에서 들어오며, 이동의 절반 가까이가 도시권 밖 먼 곳으로 향한다.</p></div></div>
   <div class="finding"><div class="n">4</div><div>
-    <h4>빈 네모의 사람들은 신규 DID로 “이사”하지 않았다</h4>
-    <p>빈 네모가 많은 읍면동에서 나간 이동자의 도착지는 도시 전체 이동자와 거의 같다. 47~67%는 기존 DID의 다른 동으로 가고, 신규 DID로 간 비율은 3~8%뿐이다.
+    <h4>빈 네모의 사람들은 신규 DID로 “이사”하지 않았다 — 창원만 예외</h4>
+    <p>빈 네모가 많은 읍면동에서 나간 이동자의 도착지는 대부분 도시 전체 이동자와 비슷하다. 대구·부산·광주·울산은 56~69%가 기존 DID의 다른 동으로 가고, 신규 DID로 간 비율은 1~6%뿐이다.
       즉 시가지의 구멍은 주민이 신규 택지로 옮겨 간 결과라기보다 <b>고령화·자연 감소·세대 축소</b>가 기존 시가지 곳곳에서 진행된 결과로 보는 것이 맞다.
-      신규 DID는 도시 곳곳과 도시권 밖에서 들어온 사람으로 채워졌다. 확장과 공동화가 맞교환이 아니라 <b>따로 동시에</b> 진행되며 평균 밀도를 끌어내린다.</p></div></div>
+      예외는 <b>창원</b>이다. 빈 네모 이동자는 도시권 다른 시군구(김해 등, 19.0%, 도시 전체 8.9%)와 도시권 밖(40.6%, 전체 32.1%)으로 더 많이 나가고, 시 안 유지 DID로 간 비율은 30.1%(전체 48.2%)로 낮다.
+      확장과 공동화가 맞교환이 아니라 <b>따로 동시에</b> 진행되며 평균 밀도를 끌어내린다.</p></div></div>
   <div class="finding"><div class="n">5</div><div>
     <h4>혁신도시·신도시 정책을 시가화 구역과 밀도의 관점에서 다시 보면</h4>
-    <p>나주 빛가람 혁신도시, 대구 동구 혁신도시, 목포 남악 신도시처럼 정책적으로 만든 새 시가지는 DID 면적을 늘렸지만,
-      인구가 줄어드는 도시권에서는 새 시가지가 채워지는 만큼 기존 시가지의 밀도가 낮아진다. 연구 질문 2와 연결하면,
-      학교·청사·도시철도역 같은 기존 인프라가 남아 있는 빈 네모와 그 주변 유지 DID가 <b>“구멍을 메우는” 재생의 우선 대상</b>이며,
+    <p>2015→2024 비수도권 DID 면적 증가 상위는 세종(+18.0km²), 아산, 천안 서북, 나주(빛가람 혁신도시, 2.3 → 8.5km²), 김해, 대구 달성군 같은 정책 신시가지다.
+      나주는 DID가 3.8배가 됐지만 밀도는 6% 떨어졌고, 김해는 18.7% 넓어지며 밀도가 10.3% 낮아졌다. 인구가 줄어드는 도시권에서는 새 시가지가 채워지는 만큼 기존 시가지의 밀도가 낮아진다.
+      연구 질문 2와 연결하면, 학교·청사·도시철도역 같은 기존 인프라가 남아 있는 빈 네모와 그 주변 유지 DID가 <b>“구멍을 메우는” 재생의 우선 대상</b>이며,
       신규 확장보다 기존 시가지의 접근성을 살리는 방향이 축소 시대의 기준이 될 수 있다.</p></div></div>
-  <p class="note"><b>한계</b> · 2010→2015 격자 인구 집계 기준 변경, 격자 인구의 소지역 비공개 처리, MDIS 이동자료는 5개 연도 표본(연간 합계 아님),
-    빈 네모 이동자는 읍면동 단위 비례 추정, 도시 중심은 시청 한 점으로 고정, 2000년 이동자료는 시군구 서머리라 산출 방식이 다르다.</p>
+  <p class="note"><b>한계</b> · 분석 기간이 9년으로 짧다(2015 이전은 집계 기준이 달라 제외). 격자 인구의 소지역 비공개 처리, MDIS 이동자료는 2015·2020·2024 3개 연도만 사용,
+    빈 네모 이동자는 읍면동 단위 비례 추정, 도시 중심은 시청 한 점으로 고정했다.</p>
 </section>
 
 <section id="src">
@@ -285,13 +305,13 @@ const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v
 
 // 헤더 숫자
 (() => {
-  const s = D.summary, last = s.year.length - 1;
-  const popChg = 100 * (s.did_pop[last] / s.did_pop[0] - 1);
+  const s = D.summary, last = s.year.length - 1, f = s.year.indexOf(D.period[0]);
+  const popChg = 100 * (s.did_pop[last] / s.did_pop[f] - 1);
   document.getElementById("stats").innerHTML = [
-    [`+${fmt(D.national.area_chg_pct, 1)}%`, "up", `DID 면적 ${fmt(s.did_area_km2[0])} → ${fmt(s.did_area_km2[last])} km²`],
-    [`+${fmt(popChg, 1)}%`, "", `DID 인구 ${fmt(s.did_pop[0] / 1e6, 1)} → ${fmt(s.did_pop[last] / 1e6, 1)}백만 명`],
-    [`${fmt(D.national.density_chg_pct, 1)}%`, "down", `DID 밀도 ${fmt(s.did_density[0])} → ${fmt(s.did_density[last])} 명/km²`],
-    ["6개 도시", "", "남원·목포·부산·대구·광주·창원 확대 분석"],
+    [`+${fmt(D.national.area_chg_pct, 1)}%`, "up", `DID 면적 ${fmt(s.did_area_km2[f])} → ${fmt(s.did_area_km2[last])} km² (${D.period.join("→")})`],
+    [`+${fmt(popChg, 1)}%`, "", `DID 인구 ${fmt(s.did_pop[f] / 1e6, 1)} → ${fmt(s.did_pop[last] / 1e6, 1)}백만 명`],
+    [`${fmt(D.national.density_chg_pct, 1)}%`, "down", `DID 밀도 ${fmt(s.did_density[f])} → ${fmt(s.did_density[last])} 명/km²`],
+    ["6개 도시", "", "대구·부산·광주·동해·창원·울산 확대 분석"],
   ].map(([b, c, t]) => `<div class="stat"><b class="${c}">${b}</b><span>${t}</span></div>`).join("");
 })();
 
@@ -352,31 +372,31 @@ const barChart = (id, rows, key, ref, refLabel, tip, color) => new Chart(documen
 barChart("c-topdens", D.top_density, "density_chg_pct", D.national.density_chg_pct,
   `전국 ${D.national.density_chg_pct}%`,
   (c) => { const r = D.top_density[c.dataIndex];
-    return [`밀도 ${fmt(r.density_2000)} → ${fmt(r.density_2024)} 명/km² (${r.density_chg_pct}%)`,
+    return [`밀도 ${fmt(r.density_2015)} → ${fmt(r.density_2024)} 명/km² (${r.density_chg_pct}%)`,
             `면적 ${r.area_chg_pct > 0 ? "+" : ""}${r.area_chg_pct}%, 인구 ${r.pop_chg_pct > 0 ? "+" : ""}${r.pop_chg_pct}%`]; },
   "#b23a2b");
 barChart("c-toparea", D.top_area, "area_chg_pct", D.national.area_chg_pct,
   `전국 +${D.national.area_chg_pct}%`,
   (c) => { const r = D.top_area[c.dataIndex];
-    return [`면적 ${fmt(r.area_2000, 1)} → ${fmt(r.area_2024, 1)} km² (+${fmt(r.area_chg_km2, 1)} km², +${r.area_chg_pct}%)`,
+    return [`면적 ${fmt(r.area_2015, 1)} → ${fmt(r.area_2024, 1)} km² (+${fmt(r.area_chg_km2, 1)} km², +${r.area_chg_pct}%)`,
             `밀도 변화 ${r.density_chg_pct > 0 ? "+" : ""}${r.density_chg_pct}%`]; },
   "#e67e22");
 
 // 도시 탭
-const CITIES = ["부산", "대구", "광주", "창원", "목포", "남원"];
+const CITIES = ["대구", "부산", "광주", "동해", "창원", "울산"];
 const FAC = {
-  부산: [["학교", 615, 486, 64, 7, 58], ["2000년 이후 설립 학교", 101, 40, 51, 0, 10], ["청사", 220, 196, 9, 1, 14], ["도시철도역", 134, 105, 7, 1, 21], ["고속도로 IC", 10, 0, 0, 0, 10]],
-  대구: [["학교", 447, 337, 60, 5, 45], ["2000년 이후 설립 학교", 108, 52, 44, 1, 11], ["청사", 148, 134, 6, 2, 6], ["도시철도역", 91, 77, 6, 2, 6], ["고속도로 IC", 15, 2, 1, 1, 11]],
-  광주: [["학교", 315, 210, 64, 1, 40], ["2000년 이후 설립 학교", 90, 34, 50, 1, 5], ["청사", 102, 80, 10, 1, 11], ["도시철도역", 19, 14, 0, 1, 4], ["고속도로 IC", 4, 0, 0, 0, 4]],
-  창원: [["학교", 226, 140, 30, 7, 49], ["2000년 이후 설립 학교", 59, 28, 18, 3, 10], ["청사", 66, 49, 5, 1, 11], ["보건기관", 16, 5, 2, 1, 8], ["고속도로 IC", 4, 0, 0, 0, 4]],
-  목포: [["학교", 64, 40, 12, 2, 10], ["2000년 이후 설립 학교", 14, 5, 9, 0, 0], ["청사", 24, 20, 3, 0, 1], ["철도역", 2, 0, 0, 1, 1], ["고속도로 IC", 0, 0, 0, 0, 0]],
-  남원: [["학교", 48, 12, 4, 0, 32], ["2000년 이후 설립 학교", 1, 1, 0, 0, 0], ["청사", 24, 8, 0, 0, 16], ["보건기관", 41, 0, 1, 0, 40], ["고속도로 IC", 5, 0, 0, 0, 5]],
+  대구: [["학교", 447, 381, 16, 3, 47], ["2000년 이후 설립 학교", 108, 85, 11, 0, 12], ["청사", 148, 140, 0, 0, 8], ["도시철도역", 91, 81, 2, 0, 8], ["고속도로 IC", 15, 3, 0, 1, 11]],
+  부산: [["학교", 615, 537, 13, 8, 57], ["2000년 이후 설립 학교", 101, 81, 10, 0, 10], ["청사", 221, 201, 4, 2, 14], ["도시철도역", 134, 109, 3, 0, 22], ["고속도로 IC", 10, 0, 0, 0, 10]],
+  광주: [["학교", 315, 272, 2, 1, 40], ["2000년 이후 설립 학교", 90, 82, 2, 1, 5], ["청사", 102, 88, 2, 1, 11], ["도시철도역", 19, 14, 0, 1, 4], ["고속도로 IC", 4, 0, 0, 0, 4]],
+  동해: [["학교", 27, 9, 8, 1, 9], ["2000년 이후 설립 학교", 1, 1, 0, 0, 0], ["청사", 10, 5, 2, 1, 2], ["철도역", 2, 0, 1, 0, 1], ["고속도로 IC", 2, 0, 0, 0, 2]],
+  창원: [["학교", 226, 160, 10, 9, 47], ["2000년 이후 설립 학교", 59, 40, 6, 3, 10], ["청사", 66, 53, 1, 0, 12], ["보건기관", 16, 6, 1, 0, 9], ["고속도로 IC", 4, 0, 0, 0, 4]],
+  울산: [["학교", 245, 172, 11, 3, 59], ["2000년 이후 설립 학교", 98, 68, 6, 2, 22], ["청사", 59, 44, 1, 0, 14], ["보건기관", 24, 4, 0, 0, 20], ["고속도로 IC", 8, 1, 0, 0, 7]],
 };
-const state = { city: "부산", cityview: "city", city2: "부산", flowview: "flows" };
+const state = { city: "대구", cityview: "city", city2: "대구", flowview: "flows" };
 const CAP = {
-  city: (c) => `${c} · 왼쪽: 2000→2024 DID 변화, 오른쪽: 2024년 DID(4,000·2,000명/km²)와 SGIS 도시화지역 비교. 굵은 선은 시 경계.`,
+  city: (c) => `${c} · 왼쪽: 2015→2024 DID 변화, 오른쪽: 2024년 DID(4,000·2,000명/km²)와 SGIS 도시화지역 비교. 굵은 선은 시 경계, 보라색 점선은 Top 10 시군구.`,
   facilities: (c) => `${c} · DID 변화 위에 학교(속 빈 기호=2000년 이전, 채운 기호=이후 설립), 청사, 보건기관, 철도·도시철도, 버스터미널, 고속도로·IC를 얹었다.`,
-  flows: (c) => `${c} · 시군구 순이동률(색)과 순이동 상위 15개 흐름(화살표). 빨강=시청에서 멀어지는 방향, 파랑=시청 쪽.`,
+  flows: (c) => `${c} · 2015·2024년 시군구 순이동률(색)과 순이동 상위 15개 흐름(화살표). 빨강=시청에서 멀어지는 방향, 파랑=시청 쪽.`,
   lost: (c) => `${c} · 빈 네모가 있는 읍면동에서 나간 이동(빈 네모 인구 비율로 가중)의 상위 흐름과 도착지 구성.`,
 };
 function render() {

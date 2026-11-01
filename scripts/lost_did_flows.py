@@ -30,9 +30,9 @@ import migration_analysis as ma  # noqa: E402
 ADM = da.DATA / "admdong"
 OUT_MAP = da.OUT / "maps" / "migration"
 OUT_TAB = da.OUT / "tables"
-RES, THR, Y0, Y1 = da.MAIN_RES, da.MAIN_THR, da.YEARS[0], da.YEARS[-1]
+RES, THR, Y0, Y1 = da.MAIN_RES, da.MAIN_THR, da.CHANGE_START, da.YEARS[-1]
 # 이동 연도 → 행정동 경계 판
-VERSION = {2005: "20121210", 2010: "20121210", 2015: "20160201", 2020: "20200701", 2024: "20240701"}
+VERSION = {2015: "20160201", 2020: "20200701", 2024: "20240701"}
 ZONES = ["유지 DID", "신규 DID", "빈 네모", "비DID"]
 DEST = ZONES + ["도시권 다른 시군구", "도시권 밖"]
 DEST_COLORS = {"유지 DID": "#7f8c8d", "신규 DID": "#e67e22", "빈 네모": "#d32f2f", "비DID": "#c5b358",
@@ -115,7 +115,7 @@ def plot_city(name, pairs, sigungu, results, dongs24, summary, top=18):
     from matplotlib.colors import to_rgba
     city, geom, bbox = da.city_extent(sigungu, name, results, RES, THR, (Y0, Y1))
     fig, ax = plt.subplots(figsize=(13, 11))
-    da.draw_city_frame(ax, sigungu, geom, bbox)
+    da.draw_city_frame(ax, sigungu, geom, bbox, name)
     for g, c, lbl, *rest in da.change_layers(results, RES, THR, Y0, Y1):
         da.plot_area(ax, g, sigungu.crs, c, da.area_style(rest, default_alpha=0.5))
     p = pairs[pairs["city"] == name].copy()
@@ -160,7 +160,7 @@ def plot_city(name, pairs, sigungu, results, dongs24, summary, top=18):
     ax.legend(handles=handles, loc="upper left", fontsize=9, frameon=True)
     ax.text(0.005, 0.03, ADM_NOTE, transform=ax.transAxes, fontsize=6.5, color="#777", zorder=10)
     ax.set_title(f"{name} · 빈 네모(DID에서 빠진 격자) 사람들은 어디로 갔나\n"
-                 "2005·2010·2015·2020·2024년 읍면동 간 이동 합계, 출발 동의 빈 네모 인구 비율로 가중한 추정치",
+                 "2015·2020·2024년 읍면동 간 이동 합계, 출발 동의 빈 네모 인구 비율로 가중한 추정치",
                  fontsize=12)
     fig.tight_layout()
     fig.savefig(OUT_MAP / f"lost_did_flows_{name}.png", dpi=200)
@@ -194,7 +194,7 @@ def plot_bars(summary):
     ax.set_xlim(0, 100)
     ax.set_xlabel("도착지 구성 (%)")
     ax.legend(ncol=6, loc="upper center", bbox_to_anchor=(0.5, 1.09), fontsize=9, frameon=False)
-    ax.set_title("빈 네모에서 나간 이동자(추정)와 도시 전체 이동자의 도착지 비교 (2005~2024 5개 연도 합)",
+    ax.set_title("빈 네모에서 나간 이동자(추정)와 도시 전체 이동자의 도착지 비교 (2015·2020·2024년 합)",
                  fontsize=12, pad=30)
     fig.text(0.5, -0.01, "자료: 통계청 국내인구이동통계 MDIS, SGIS 격자 인구. 같은 읍면동 안 이사 제외. "
              + ADM_NOTE, ha="center", fontsize=8.5, color="#555")

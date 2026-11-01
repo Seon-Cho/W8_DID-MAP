@@ -54,6 +54,8 @@ SGG_MIN_AREA = 5  # 시군구 비교 시 최소 DID 면적(km²). 너무 작으�
 
 # 2015년부터 집계 대상이 내국인 → 내·외국인 전체 가구로 바뀜 (SGIS 유의사항)
 DEFINITION_BREAK = (2010, 2015)
+# 변화 분석 시작 연도: 집계 기준이 같은 2015→2024 구간만 비교한다 (도시 지도·변화 지도·시설 집계)
+CHANGE_START = DEFINITION_BREAK[1]
 
 SIDO = {
     "11": "서울", "21": "부산", "22": "대구", "23": "인천", "24": "광주",
@@ -62,15 +64,20 @@ SIDO = {
     "38": "경남", "39": "제주",
 }
 CAPITAL_REGION = ["11", "23", "31"]
-# 도시 확대도 대상: 이름 → 2025년 시군구 경계에서 해당 도시를 고르는 조건
+# 도시 확대도 대상: 2015→2024 DID 밀도 감소 Top 10 시군구 중 비수도권 6곳이 속한 도시 (순위 순)
+#   대구 서구, 부산 영도구, 광주 남구, 동해시, 창원 마산합포구, 울산 울주군
+# 이름 → 2025년 시군구 경계에서 해당 도시를 고르는 조건
 CITY_ZOOMS = {
-    "남원": lambda s: s["SIGUNGU_NM"] == "남원시",
-    "목포": lambda s: s["SIGUNGU_NM"] == "목포시",
-    "부산": lambda s: s["sido_cd"] == "21",
     "대구": lambda s: (s["sido_cd"] == "22") & (s["SIGUNGU_NM"] != "군위군"),  # 2023년 편입된 군위군 제외
+    "부산": lambda s: s["sido_cd"] == "21",
     "광주": lambda s: s["sido_cd"] == "24",
+    "동해": lambda s: s["SIGUNGU_NM"] == "동해시",
     "창원": lambda s: s["SIGUNGU_NM"].str.startswith("창원시"),
+    "울산": lambda s: s["sido_cd"] == "26",
 }
+# 순위에 오른 시군구 (지도에서 따로 강조)
+CITY_FOCUS = {"대구": "서구", "부산": "영도구", "광주": "남구", "동해": "동해시", "창원": "창원시 마산합포구",
+              "울산": "울주군"}
 # 수도권 확대 지도 범위 (EPSG:5179). 시도 경계로 잡으면 서해 섬 때문에 너무 넓어져서 고정값을 쓴다.
 CAPITAL_BBOX = (900000, 1885000, 1060000, 2010000)
 
@@ -396,12 +403,20 @@ def draw_basemap(ax, crs, bbox):
     ax.set_ylim(bbox[1], bbox[3])
 
 
-def draw_city_frame(ax, sigungu, city_geom, bbox):
+def draw_city_frame(ax, sigungu, city_geom, bbox, name=None):
     ax.set_xlim(bbox[0], bbox[2])
     ax.set_ylim(bbox[1], bbox[3])
     draw_basemap(ax, sigungu.crs, bbox)
     sigungu.boundary.plot(ax=ax, color="#8a8a8a", linewidth=0.4)
     gpd.GeoSeries([city_geom], crs=sigungu.crs).boundary.plot(ax=ax, color="#222", linewidth=1.1)
+    focus = CITY_FOCUS.get(name)
+    city = sigungu[CITY_ZOOMS[name](sigungu)] if name else None
+    if focus and city is not None and len(city) > 1:  # 순위에 오른 구·군을 보라 점선으로 강조
+        sel = city[city["SIGUNGU_NM"] == focus]
+        sel.boundary.plot(ax=ax, color="#6a1b9a", linewidth=2.2, linestyle=(0, (4, 2)), zorder=4)
+        pt = sel.geometry.iloc[0].representative_point()
+        ax.text(pt.x, pt.y, focus.replace("창원시 ", ""), color="#6a1b9a", fontsize=10, fontweight="bold",
+                ha="center", zorder=9, bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.75))
     ax.set_xlim(bbox[0], bbox[2])
     ax.set_ylim(bbox[1], bbox[3])
     ax.set_axis_off()
@@ -413,11 +428,11 @@ def plot_city_zoom(results, sigungu, region, name, res, thr, y0, y1):
     st = city_stats(region, city, y0, y1)
     fig, axes = plt.subplots(1, 2, figsize=(17, 8.6))
 
-    draw_city_frame(axes[0], sigungu, geom, bbox)
+    draw_city_frame(axes[0], sigungu, geom, bbox, name)
     draw_layers(axes[0], change_layers(results, res, thr, y0, y1), sigungu.crs, clip=geom, fontsize=9)
     axes[0].set_title(f"DID 변화 {y0}→{y1} ({thr:,}명/km² 기준)", fontsize=12)
 
-    draw_city_frame(axes[1], sigungu, geom, bbox)
+    draw_city_frame(axes[1], sigungu, geom, bbox, name)
     cmp, _ = comparison_layers(results, res, y1)
     layers = [(g, c, lbl, 0.35 if lbl.startswith("SGIS") else 1) for lbl, g, c in reversed(cmp)]
     draw_layers(axes[1], layers, sigungu.crs, clip=geom, fontsize=9)
@@ -441,7 +456,7 @@ def plot_city_grid(results, sigungu, region, res, thr, y0, y1):
     fig, axes = plt.subplots(nrow, ncol, figsize=(18, 6.4 * nrow))
     for ax, name in zip(axes.flat, names):
         city, geom, bbox = city_extent(sigungu, name, results, res, thr, (y0, y1))
-        draw_city_frame(ax, sigungu, geom, bbox)
+        draw_city_frame(ax, sigungu, geom, bbox, name)
         draw_layers(ax, change_layers(results, res, thr, y0, y1), sigungu.crs, clip=geom, fontsize=8)
         (a0, d0), (a1, d1) = city_stats(region, city, y0, y1).values()
         ax.set_title(f"{name}  ·  밀도 {d0:,.0f}→{d1:,.0f}명/km² ({100 * (d1 / d0 - 1):+.1f}%)",
@@ -510,7 +525,7 @@ def plot_city_facilities(results, sigungu, region, fac, name, res, thr, y0, y1):
     from matplotlib.lines import Line2D
     city, geom, bbox = city_extent(sigungu, name, results, res, thr, (y0, y1))
     fig, ax = plt.subplots(figsize=(15.5, 11))
-    draw_city_frame(ax, sigungu, geom, bbox)
+    draw_city_frame(ax, sigungu, geom, bbox, name)
     handles = []
     for g, c, lbl, *rest in change_layers(results, res, thr, y0, y1):
         opt = area_style(rest, default_alpha=0.55)
@@ -837,9 +852,8 @@ def main():
         plot_did_facets(results, sido, MAIN_RES, thr)
         plot_did_facets(results, sido, MAIN_RES, thr, bbox=capital, suffix="capital")
     plot_change(results, sido, MAIN_RES, MAIN_THR, YEARS[0], YEARS[-1])
-    plot_change(results, sido, MAIN_RES, MAIN_THR, YEARS[0], YEARS[-1], bbox=capital, suffix="capital")
-    # 집계 기준이 같은 구간끼리의 변화도 따로 남긴다
-    plot_change(results, sido, MAIN_RES, MAIN_THR, DEFINITION_BREAK[1], YEARS[-1])
+    plot_change(results, sido, MAIN_RES, MAIN_THR, CHANGE_START, YEARS[-1])
+    plot_change(results, sido, MAIN_RES, MAIN_THR, CHANGE_START, YEARS[-1], bbox=capital, suffix="capital")
     # DID 두 기준과 SGIS 도시화지역(도시) 비교 — SGIS 경계가 있는 연도만
     for year in [y for y in YEARS if load_sgis_urban(y) is not None]:
         for bbox, suffix in [(None, "national"), (capital, "capital")]:
@@ -847,14 +861,14 @@ def main():
             plot_compare_overlay(results, sido, MAIN_RES, year, bbox, suffix)
     (OUT / "maps" / "cities").mkdir(exist_ok=True)
     for name in CITY_ZOOMS:
-        plot_city_zoom(results, sigungu, region, name, MAIN_RES, MAIN_THR, YEARS[0], YEARS[-1])
-    plot_city_grid(results, sigungu, region, MAIN_RES, MAIN_THR, YEARS[0], YEARS[-1])
+        plot_city_zoom(results, sigungu, region, name, MAIN_RES, MAIN_THR, CHANGE_START, YEARS[-1])
+    plot_city_grid(results, sigungu, region, MAIN_RES, MAIN_THR, CHANGE_START, YEARS[-1])
     # 공공·교통시설 레이어가 있으면 (scripts/fetch_facilities.py) 시설 지도와 집계표도 만든다
     fac = load_facilities()
     if fac:
         for name in CITY_ZOOMS:
-            plot_city_facilities(results, sigungu, region, fac, name, MAIN_RES, MAIN_THR, YEARS[0], YEARS[-1])
-        facilities_in_did(results, sigungu, fac, MAIN_RES, MAIN_THR, YEARS[0], YEARS[-1]).to_csv(
+            plot_city_facilities(results, sigungu, region, fac, name, MAIN_RES, MAIN_THR, CHANGE_START, YEARS[-1])
+        facilities_in_did(results, sigungu, fac, MAIN_RES, MAIN_THR, CHANGE_START, YEARS[-1]).to_csv(
             OUT / "tables" / "facilities_in_did.csv", index=False, encoding="utf-8-sig")
     print(f"완료 → {OUT}")
 
