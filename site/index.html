@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DID 확장과 밀도 저하</title>
-<meta name="description" content="격자 인구로 추출한 인구집중지구(DID)로 본 2015~2024년 도시화 면적 확장과 인구밀도 저하, 비수도권 6개 도시의 인구 이동 방향 분석">
+<title>도시화지역 확장과 밀도 저하</title>
+<meta name="description" content="1km 격자 인구로 추출한 도시화지역(도시·준밀집, UN·EU 도시화 등급)으로 본 2015~2024년 면적 확장과 인구밀도 저하, 인구감소지역 6곳의 인구 이동 분석">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -122,8 +122,8 @@
 <header>
   <div class="kicker">스마트시티 융합기술세미나 · 과제 3</div>
   <h1>도시는 넓어지고, 밀도는 낮아진다</h1>
-  <p class="lead">격자 인구로 그린 인구집중지구(DID)로 2015~2024년 한국의 도시화를 다시 읽는다.
-    시가지 면적은 계속 늘었지만 그 안의 인구밀도는 꾸준히 낮아졌다. DID 밀도가 가장 많이 떨어진 비수도권 6개 도시에서 어디가 새로 시가지가 되고 어디가 비었는지,
+  <p class="lead">격자 인구로 도시화지역(도시·준밀집)을 직접 그려 2015~2024년 한국의 도시화를 다시 읽는다.
+    도시화지역 면적은 늘었지만 그 안의 인구밀도는 낮아졌다. 밀도가 가장 많이 떨어진 인구감소지역 6곳에서 어디가 새로 도시화지역이 되고 어디가 빠졌는지,
     사람들은 어느 방향으로 움직였는지 함께 살펴본다.</p>
   <div class="stats" id="stats"></div>
 </header>
@@ -134,27 +134,31 @@
   <h2><span class="no">1</span>연구 질문 및 분석 대상</h2>
   <p><b>분석 기간</b>: 2015→2024년. SGIS 격자 인구가 2015년부터 등록센서스 기준으로 바뀌어, 그 전후를 잇는 증감에는 집계 기준 변경 효과가 섞인다.
     같은 기준으로 비교할 수 있는 2015년을 출발점으로 삼았다(2000~2010년 값은 동적 지도와 시계열 차트에서 참고로만 제시).</p>
-  <p><b>분석 대상</b>: 전국(시군구 단위 비교)과, 2015→2024 DID 인구밀도 감소율 Top 10 시군구 중 수도권(광명·의왕·성남 수정·군포)을 뺀 6곳이다.
-    해당 시군구가 속한 도시 전체를 확대 분석했다.</p>
+  <p><b>도시화지역 정의</b>: 처음에는 일본식 인구집중지구(DID, 2,000·4,000명/km²)를 썼지만, 국제 기준인 UN·EU·OECD의 도시화 등급(Degree of Urbanisation)으로 바꿨다.
+    1km 격자에서 <b>도시</b>는 1,500명/km² 이상 격자가 이어진 인구 5만 명 이상 덩어리, <b>도시·준밀집지역</b>은 300명/km² 이상 격자가 이어진 인구 5천 명 이상 덩어리다.
+    기준이 달라졌으므로 더 이상 DID라 부르지 않고 통계청 SGIS와 같은 이름(도시·준도시)을 쓴다. 주 분석은 <b>도시·준밀집지역(300명/km²)</b>이다.</p>
+  <p><b>분석 대상</b>: 전국(시군구 단위 비교)과, 행정안전부 지정 <a href="https://www.mois.go.kr/frt/sub/a06/b06/populationDecline/screen.do">인구감소지역(89곳)·관심지역(3곳) 92곳</a> 가운데
+    4-3(밀도 감소율)·4-4(면적 증가율) 순위에서 앞선 6곳이다. 모두 시·군 하나가 그대로 분석 범위다.</p>
   <div class="table-wrap"><table>
-    <thead><tr><th class="num">순위</th><th>시군구</th><th class="num">DID 밀도 변화</th><th>확대 분석 범위</th></tr></thead>
+    <thead><tr><th>지역</th><th class="num">밀도 감소율 순위<br><span class="muted">(전국 232곳)</span></th><th class="num">밀도 변화</th>
+      <th class="num">면적 증가율 순위<br><span class="muted">(비수도권 165곳)</span></th><th class="num">면적 변화</th><th>고른 이유</th></tr></thead>
     <tbody>
-      <tr><td class="num">3</td><td>대구 서구</td><td class="num neg">−18.7%</td><td>대구광역시 (군위군 제외)</td></tr>
-      <tr><td class="num">5</td><td>부산 영도구</td><td class="num neg">−17.7%</td><td>부산광역시</td></tr>
-      <tr><td class="num">6</td><td>광주 남구</td><td class="num neg">−17.0%</td><td>광주광역시</td></tr>
-      <tr><td class="num">7</td><td>강원 동해시</td><td class="num neg">−16.8%</td><td>동해시</td></tr>
-      <tr><td class="num">9</td><td>창원시 마산합포구</td><td class="num neg">−16.5%</td><td>창원시 (5개 구)</td></tr>
-      <tr><td class="num">10</td><td>울산 울주군</td><td class="num neg">−16.4%</td><td>울산광역시</td></tr>
+      <tr><td>전남 완도군</td><td class="num">1</td><td class="num neg">−34.7%</td><td class="num">3</td><td class="num pos">+60.0%</td><td>두 순위 모두 Top 10</td></tr>
+      <tr><td>경북 청도군</td><td class="num">2</td><td class="num neg">−33.7%</td><td class="num">2</td><td class="num pos">+60.0%</td><td>두 순위 모두 Top 10</td></tr>
+      <tr><td>강원 양구군</td><td class="num">8</td><td class="num neg">−20.3%</td><td class="num">26</td><td class="num pos">+14.3%</td><td>밀도 감소 Top 10</td></tr>
+      <tr><td>전북 순창군</td><td class="num">14</td><td class="num neg">−18.2%</td><td class="num">8</td><td class="num pos">+40.0%</td><td>면적 증가 Top 10, 밀도 감소</td></tr>
+      <tr><td>충북 괴산군</td><td class="num">11</td><td class="num neg">−19.3%</td><td class="num">28</td><td class="num pos">+14.3%</td><td>밀도 감소 차순위</td></tr>
+      <tr><td>충북 제천시</td><td class="num">13</td><td class="num neg">−18.4%</td><td class="num">18</td><td class="num pos">+21.7%</td><td>밀도 감소 차순위</td></tr>
     </tbody></table></div>
-  <p class="muted">기간을 2000→2024에서 2015→2024로 바꾸면서 순위가 달라졌다. 이전 분석의 남원(12위)과 목포(15위)는 Top 10 밖으로 밀려났고,
-    동해·울산(울주군)이 새로 들어왔다. 지도에서는 순위에 든 시군구를 보라색 점선으로 표시했다.</p>
+  <p class="muted">두 Top 10에 든 인구감소지역은 완도·청도·양구·순창 4곳뿐이어서, 밀도 감소율 순위에서 그다음인 괴산(11위)·제천(13위)을 더했다.
+    밀도 순위는 2015·2024 두 해 모두 도시화지역이 5km² 이상인 시군구만 비교했다.</p>
   <div class="q"><b>연구 질문 1</b> · 도시화 지역의 면적과 인구밀도는 어떤 관계인가?<br>
     <span class="muted">가설: 시간에 따라 도시화 면적은 커지지만 인구밀도는 감소하며, 비효율적인 도시화가 진행 중이다.</span></div>
   <div class="q"><b>연구 질문 2</b> · 기존 공공시설과 교통 인프라의 접근성·중심성에 따라 축소의 방향을 정할 수 있을까?<br>
     <span class="muted">빈집 문제 해결의 우선순위, 공공 인프라 축소의 기준 설정 등</span></div>
   <p class="note"><b>스펀지화(sponge city)</b> · 도시 내부에 빈 땅·빈집 같은 저이용 공간이 시간적·공간적으로 무작위하게 상당량 생기는 현상.
     생산성 저하, 행정서비스 비효율, 도시 매력 저하를 부른다. 구멍을 메우고 새 구멍이 생기지 않게 하는 노력이 필요하다.
-    이 분석에서 <b>“빈 네모”</b>(2015년에는 DID였지만 2024년에는 빠진 격자)가 그 구멍에 해당한다.</p>
+    이 분석에서 <b>“빈 네모”</b>(2015년에는 도시화지역이었지만 2024년에는 빠진 격자)가 그 구멍에 해당한다.</p>
 </section>
 
 <!-- 2 -->
@@ -163,23 +167,27 @@
   <div class="table-wrap"><table>
     <thead><tr><th>구분</th><th>자료</th><th>내용·용도</th></tr></thead>
     <tbody>
-      <tr><td>인구</td><td>SGIS 격자 통계(인구) 500m·1km</td><td>2000·2005·2010·2015·2020·2024년 격자별 총인구. DID 추출의 기본 자료</td></tr>
-      <tr><td>경계</td><td>SGIS 격자 경계(2025), 센서스용 시군구 경계(2025 2Q)</td><td>격자 면적, 시군구 집계와 도시 범위</td></tr>
-      <tr><td>비교</td><td>SGIS 도시화지역 경계(2015·2020·2024)</td><td>통계청 도시·준도시 구분과 DID 비교</td></tr>
+      <tr><td>인구</td><td>SGIS 격자 통계(인구) 1km·500m</td><td>2000·2005·2010·2015·2020·2024년 격자별 총인구. 도시화지역 추출의 기본 자료(주 분석 1km)</td></tr>
+      <tr><td>경계</td><td>SGIS 격자 경계(2025), 센서스용 시군구 경계(2025 2Q)</td><td>격자 면적, 시군구 집계와 분석 범위</td></tr>
+      <tr><td>검증</td><td>SGIS 도시화지역 경계(2015·2020·2024)</td><td>통계청이 같은 국제 기준으로 만든 도시·준도시 경계와 직접 추출 결과 비교</td></tr>
+      <tr><td>지정</td><td>행정안전부 인구감소지역 지정 현황</td><td>인구감소지역 89곳과 관심지역 3곳(분석 대상 선정)</td></tr>
       <tr><td>인구 이동</td><td>통계청 국내인구이동통계 MDIS 마이크로데이터</td><td>2015·2020·2024 인구관련 연간자료(전입·전출 읍면동, 사유, 연령)</td></tr>
       <tr><td>행정동</td><td>vuski/admdongkor 행정동 경계(2016·2020·2024판)</td><td>MDIS 읍면동 코드의 위치. CC BY 4.0</td></tr>
-      <tr><td>공공시설</td><td>공공데이터포털 학교·보건기관 표준데이터, 카카오 로컬 검색</td><td>초·중·고(설립연도), 보건소·보건지소, 시·구·군청, 행정복지센터, 버스터미널</td></tr>
-      <tr><td>교통</td><td>국가철도공단 철도역, 국토교통부 도시철도 노선·표준노드링크, 한국도로공사 영업소 API, OpenStreetMap 철도</td><td>철도역·도시철도역, 고속도로 선형과 IC, 철도 선형</td></tr>
+      <tr><td>공공시설</td><td>공공데이터포털 학교·보건기관 표준데이터, 카카오 로컬 검색</td><td>초·중·고(설립연도), 보건소·보건지소·보건진료소, 시·군청·읍면사무소, 버스터미널</td></tr>
+      <tr><td>교통</td><td>국가철도공단 철도역, 한국도로공사 영업소 API, OpenStreetMap 철도</td><td>철도역, 고속도로 선형과 IC, 철도 선형</td></tr>
       <tr><td>배경지도</td><td>Esri World Topographic Map, World Hillshade (정적 지도), Esri Light Gray Canvas (동적 지도)</td><td>지형·녹지 맥락(연하게)</td></tr>
     </tbody></table></div>
   <h3>전처리 순서</h3>
   <ol class="steps">
     <li><b>격자 인구 정리</b> · SGIS 자료신청 원본에서 연도·해상도별 총인구(to_in_001)를 뽑아 격자 경계와 붙였다(EPSG:5179).</li>
-    <li><b>DID 추출</b> · 인구밀도 기준(2,000 / 4,000명/km²) 이상 격자를 고르고, 변을 맞댄(rook) 격자끼리 묶어 인구 5,000명 이상인 덩어리만 DID로 남겼다(일본 국세조사 DID 방식 차용).</li>
-    <li><b>변화 구역</b> · 2015·2024 DID를 겹쳐 유지(둘 다 DID), 신규(2024에만), 빈 네모(2015에만)로 나눴다.</li>
+    <li><b>도시화지역 추출</b> · 1km 격자에서 300명/km² 이상 격자를 꼭짓점까지 맞댄(queen) 것끼리 묶어 인구 5천 명 이상 덩어리를 도시·준밀집지역으로,
+      1,500명/km² 이상 격자를 변을 맞댄(rook) 것끼리 묶어 5만 명 이상 덩어리를 도시로 남겼다(도시화 등급 1단계 방식).</li>
+    <li><b>검증</b> · 직접 추출한 도시·준밀집지역은 SGIS 도시+준도시 경계와 면적 기준 IoU 0.95, 도시는 SGIS 도시와 IoU 0.86이다(도시는 100% SGIS 도시 안).
+      SGIS가 하는 빈틈 메우기(gap filling)는 하지 않아 조금 작게 나온다.</li>
+    <li><b>변화 구역</b> · 2015·2024 도시화지역을 겹쳐 유지(둘 다), 신규(2024에만), 빈 네모(2015에만)로 나눴다.</li>
     <li><b>시설·교통 위치</b> · 좌표가 없는 시설은 카카오 로컬 검색(없으면 Nominatim)으로 위치를 찾고 분류명으로 걸렀다. 결과는 캐시에 저장해 재실행 때 다시 검색하지 않는다.</li>
     <li><b>인구 이동표</b> · MDIS 원자료(약 2.6GB)를 압축을 풀지 않고 읽어 시군구·읍면동 OD로 집계했다. 같은 읍면동 안 이사를 빼면 연도별 합계가 공식 이동자 수와 정확히 같다(2024년 6,283,319명).</li>
-    <li><b>코드 맞추기</b> · 연도마다 다른 행정 코드를 2025 시군구로 맞췄다(창원 통합 전 창원·마산·진해는 창원시 하나로, 출장소는 본청으로). 읍면동은 경계 판과 MDIS 중심점으로 찾았다.</li>
+    <li><b>코드 맞추기</b> · 연도마다 다른 행정 코드를 2025 시군구로 맞췄다(출장소는 본청으로). 읍면동은 경계 판과 MDIS 중심점으로 찾았다.</li>
   </ol>
   <p class="note">2010→2015 사이 SGIS 격자 인구 집계 기준이 바뀌었다(등록센서스 전환). 그래서 변화 분석은 2015→2024로 하고, 2000~2010 값은 시계열 차트에서 참고로만 보여 준다.</p>
 </section>
@@ -187,47 +195,38 @@
 <!-- 3 -->
 <section id="index">
   <h2><span class="no">3</span>지표의 정의, 계산식, 산출 결과</h2>
-  <h3>DID와 밀도</h3>
-  <div class="formula">격자 인구밀도   dᵢ = Pᵢ / Aᵢ                       (500m 격자: Aᵢ = 0.25 km²)
-DID 후보       dᵢ ≥ θ                              (θ = 2,000 또는 4,000 명/km², 주 분석 2,000)
-DID 덩어리     k = rook 인접으로 이어진 후보 격자 묶음,  Σ_{i∈k} Pᵢ ≥ 5,000명
-DID 면적       A = Σ_k Σ_{i∈k} Aᵢ        DID 인구  P = Σ_k Σ_{i∈k} Pᵢ
-DID 인구밀도   D = P / A
-밀도 변화율    ΔD(%) = (D₂₀₂₄ / D₂₀₁₅ − 1) × 100,   전국 대비(%p) = ΔD시군구 − ΔD전국</div>
+  <h3>도시화지역과 밀도</h3>
+  <div class="formula">격자 인구밀도     dᵢ = Pᵢ / Aᵢ                               (1km 격자: Aᵢ = 1 km²)
+도시·준밀집 후보   dᵢ ≥ 300 명/km²,   queen 인접(꼭짓점 포함)으로 묶은 덩어리 k,  Σ_{i∈k} Pᵢ ≥ 5,000명
+도시 후보          dᵢ ≥ 1,500 명/km², rook 인접(변)으로 묶은 덩어리 k,          Σ_{i∈k} Pᵢ ≥ 50,000명
+도시화지역 면적   A = Σ_k Σ_{i∈k} Aᵢ        인구  P = Σ_k Σ_{i∈k} Pᵢ
+도시화지역 밀도   D = P / A
+밀도 변화율       ΔD(%) = (D₂₀₂₄ / D₂₀₁₅ − 1) × 100,   전국 대비(%p) = ΔD시군구 − ΔD전국</div>
   <h3>인구 이동 방향</h3>
-  <div class="formula">순유출률(‰)     = (중심도시→주변 이동자 − 주변→중심도시 이동자) / 중심도시 인구 × 1,000
-바깥쪽 이동 비율 = Σ(도착지가 시청에서 출발지보다 1km 이상 먼 이동) / Σ(시청 거리 차가 1km 이상인 이동)
-                  · 도시권 = 시청에서 반경 R km 안(인구가중 중심점 기준) 시군구, R = 25~40km
+  <div class="formula">순유출률(‰)     = (중심 시·군→주변 이동자 − 주변→중심 시·군 이동자) / 중심 시·군 인구 × 1,000
+바깥쪽 이동 비율 = Σ(도착지가 군청에서 출발지보다 1km 이상 먼 이동) / Σ(군청 거리 차가 1km 이상인 이동)
+                  · 도시권 = 군청(시청)에서 반경 30km 안(인구가중 중심점 기준) 시군구, 섬인 완도는 45km
 빈 네모 이동자   = Σ_o  M(o→d) × P_o(빈 네모) / P_o      (o: 출발 읍면동, 같은 동 안 이사 제외)</div>
-  <h3>산출 결과 · 전국 (500m 격자, 2,000명/km²)</h3>
+  <h3>산출 결과 · 전국 (1km 격자, 도시·준밀집지역 300명/km²)</h3>
   <div class="table-wrap"><table id="tbl-summary"></table></div>
-  <h3>산출 결과 · 6개 도시 (시 경계 안 DID)</h3>
-  <div class="table-wrap"><table>
-    <thead><tr><th>도시</th><th class="num">DID 면적 2015</th><th class="num">2024</th><th class="num">면적 변화</th>
-      <th class="num">DID 밀도 2015</th><th class="num">2024</th><th class="num">밀도 변화</th></tr></thead>
-    <tbody>
-      <tr><td>동해</td><td class="num">8.5 km²</td><td class="num">11.2</td><td class="num pos">+32.4%</td><td class="num">7,427</td><td class="num">6,183</td><td class="num neg">−16.8%</td></tr>
-      <tr><td>울산</td><td class="num">79.0</td><td class="num">85.8</td><td class="num pos">+8.5%</td><td class="num">13,284</td><td class="num">11,564</td><td class="num neg">−12.9%</td></tr>
-      <tr><td>광주</td><td class="num">101.5</td><td class="num">109.2</td><td class="num pos">+7.6%</td><td class="num">14,255</td><td class="num">12,649</td><td class="num neg">−11.3%</td></tr>
-      <tr><td>창원</td><td class="num">78.0</td><td class="num">83.2</td><td class="num pos">+6.7%</td><td class="num">12,335</td><td class="num">10,946</td><td class="num neg">−11.3%</td></tr>
-      <tr><td>대구</td><td class="num">152.8</td><td class="num">162.5</td><td class="num pos">+6.4%</td><td class="num">15,512</td><td class="num">13,883</td><td class="num neg">−10.5%</td></tr>
-      <tr><td>부산</td><td class="num">193.5</td><td class="num">195.8</td><td class="num pos">+1.2%</td><td class="num">17,172</td><td class="num">16,017</td><td class="num neg">−6.7%</td></tr>
-    </tbody></table></div>
-  <p class="muted">밀도 단위: 명/km². 대구는 2023년 편입된 군위군 제외, 창원은 5개 구 합계.</p>
+  <p class="muted">도시(1,500명/km², 5만 명) 기준으로는 면적 3,354 → 3,708km²(+10.6%), 밀도 11,933 → 11,042명/km²(−7.5%)다.</p>
+  <h3>산출 결과 · 6개 지역 (시·군 경계 안 도시·준밀집지역)</h3>
+  <div class="table-wrap"><table id="tbl-cities"></table></div>
+  <p class="muted">밀도 단위: 명/km². 1km 격자라 작은 군의 면적은 격자 몇 개(5~8km²)로 이뤄져, 격자 1~3개가 늘어도 증가율이 크게 움직인다.</p>
 </section>
 
 <!-- 4 -->
 <section id="viz">
   <h2><span class="no">4</span>공간 시각화 · 비공간 시각화</h2>
 
-  <h3>4-1. 전국 DID 동적 지도</h3>
+  <h3>4-1. 전국 도시화지역 동적 지도</h3>
   <div class="mapwrap">
     <div>
       <div class="map-ctl">
         <div class="tabs" role="tablist" id="map-time"></div>
         <button class="play" id="map-play" type="button">▶ 재생</button>
-        <span><label><input type="checkbox" data-thr="2000" checked> 2,000명/km²</label>
-          <label><input type="checkbox" data-thr="4000"> 4,000명/km²</label></span>
+        <span><label><input type="checkbox" data-thr="300" checked> 도시·준밀집 (300명/km²)</label>
+          <label><input type="checkbox" data-thr="1500"> 도시 (1,500명/km²)</label></span>
       </div>
       <div id="lmap"></div>
       <div class="map-legend" id="map-legend"></div>
@@ -239,41 +238,45 @@ DID 인구밀도   D = P / A
       <div class="box"><canvas id="c-sgg-dens"></canvas></div>
     </aside>
   </div>
-  <p class="muted">500m 격자 DID. 위 버튼으로 연도(2000~2024)나 2015→2024 변화를 고르고, 밀도 기준 2,000·4,000명/km²를 함께 켜면 한 지도에 겹쳐 보인다
-    (변화 보기에서 두 기준을 함께 켜면 4,000 기준은 점선 테두리). 경계는 시·군 단위다(특별시·광역시·특별자치시는 하나로, 일반구가 있는 시는 시로 합침). 지역을 누르면 그 지역으로 확대되고 오른쪽 그래프가 그 지역으로 바뀐다.
+  <p class="muted">1km 격자 도시화지역. 위 버튼으로 연도(2000~2024)나 2015→2024 변화를 고르고, 도시·준밀집(300)과 도시(1,500)를 함께 켜면 한 지도에 겹쳐 보인다
+    (변화 보기에서 둘을 함께 켜면 도시는 점선 테두리). 경계는 시·군 단위다(특별시·광역시·특별자치시는 하나로, 일반구가 있는 시는 시로 합침). 지역을 누르면 그 지역으로 확대되고 오른쪽 그래프가 그 지역으로 바뀐다.
     그래프의 2010→2015 점선 구간은 SGIS 집계 기준 변경 구간이다. 배경지도 © Esri Light Gray Canvas (CARTO 키가 있으면 CARTO Positron).</p>
-  <figure><img src="img/did_change_capital.webp" alt="수도권 DID 변화" loading="lazy">
+  <figure><img src="img/compare_sgis_2024.webp" alt="직접 추출한 도시화지역과 SGIS 도시화지역 비교" loading="lazy">
+    <figcaption>2024년 직접 추출한 도시화지역과 SGIS 도시·준도시 경계 비교(1km). 두 경계가 거의 겹친다(IoU 0.95).</figcaption></figure>
+  <figure><img src="img/did_change_capital.webp" alt="수도권 도시화지역 변화" loading="lazy">
     <figcaption>수도권 확대(2015→2024). 신도시·택지개발지구가 주황 덩어리로 드러난다.</figcaption></figure>
 
-  <h3>4-2. DID 인구밀도 변화 시계열</h3>
+  <h3>4-2. 도시화지역 인구밀도 변화 시계열</h3>
   <div class="grid2">
     <div class="chart"><div class="box"><canvas id="c-density"></canvas></div></div>
     <div class="chart"><div class="box"><canvas id="c-area"></canvas></div></div>
   </div>
-  <p class="muted">비수도권 = 서울·경기·인천 제외. 2010→2015 사이 집계 기준이 바뀌었으므로 분석은 2015 이후 구간(2015·2020·2024)으로 한다. 세 지역 모두 면적은 늘고 밀도는 내려간다.</p>
+  <p class="muted">비수도권 = 서울·경기·인천 제외(시군구별 합계라 전국 표와 조금 다르다). 2010→2015 사이 집계 기준이 바뀌었으므로 분석은 2015 이후 구간(2015·2020·2024)으로 한다.
+    수도권(면적 +8.6%, 밀도 −3.9%)과 비수도권(+3.6%, −3.4%) 모두 면적은 늘고 밀도는 내려간다.</p>
 
   <h3>4-3. 인구밀도 변화 Top 10 시군구 (전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-topdens"></canvas></div></div>
-  <p class="muted">2015·2024 두 해 모두 DID가 일정 면적 이상인 시군구 중 DID 밀도 감소율이 큰 순. 점선은 전국 DID 밀도 변화율. 진한 막대(★)는 수도권 4곳을 뺀 확대 분석 대상 6곳이다.</p>
+  <p class="muted">2015·2024 두 해 모두 도시화지역이 5km² 이상인 시군구 중 밀도 감소율이 큰 순. 점선은 전국 도시화지역 밀도 변화율. 진한 막대(★)는 확대 분석한 인구감소지역이다.</p>
 
-  <h3>4-4. DID 면적 증가율 Top 10 시군구 (수도권 제외, 전국 평균 대비)</h3>
+  <h3>4-4. 도시화지역 면적 증가율 Top 10 시군구 (수도권 제외, 전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-toparea"></canvas></div></div>
-  <p class="muted">비수도권(서울·경기·인천 제외) DID 면적 증가율(%) 순위(2015년에 DID가 있던 시군구). 진한 막대(▼)는 면적이 늘면서 DID 인구밀도는 낮아진 곳이다. 2015년 DID가 작은 곳은 격자 몇 개로도 비율이 크게 움직인다. 점선은 전국 DID 면적 증가율. 막대에 마우스를 올리면 증가 면적이 보인다.</p>
+  <p class="muted">비수도권(서울·경기·인천 제외) 도시화지역 면적 증가율(%) 순위(2015년에 도시화지역이 있던 시군구). 진한 막대(▼)는 면적이 늘면서 밀도는 낮아진 곳, ★는 확대 분석한 인구감소지역이다.
+    2015년 면적이 작은 곳은 격자 몇 개로도 비율이 크게 움직인다. 점선은 전국 면적 증가율. 막대에 마우스를 올리면 증가 면적이 보인다.</p>
 
-  <h3>4-5. 6개 도시 DID 지도</h3>
-  <figure><img src="img/cities_change.webp" alt="6개 도시 DID 변화" loading="lazy">
-    <figcaption>6개 도시 한눈에 보기(2015→2024). 보라색 점선은 밀도 감소율 Top 10에 든 시군구. 기존 시가지 가장자리와 안쪽에 빈 네모가 흩어지고, 외곽 택지에 신규 DID가 붙는다.</figcaption></figure>
+  <h3>4-5. 6개 지역 도시화지역 지도</h3>
+  <figure><img src="img/cities_change.webp" alt="6개 지역 도시화지역 변화" loading="lazy">
+    <figcaption>6개 지역 한눈에 보기(2015→2024). 회색 = 두 해 모두, 주황 = 새로 도시화지역, 빨간 테두리 = 빠진 격자(빈 네모). 읍 중심지 가장자리에 1km 격자가 1~3개씩 붙었다.</figcaption></figure>
   <div class="tabs" role="tablist" data-group="city"></div>
   <div class="tabs" role="tablist" data-group="cityview">
-    <button data-v="city" aria-selected="true">DID 변화 · 도시지역 정의 비교</button>
+    <button data-v="city" aria-selected="true">도시화지역 변화 · SGIS 비교</button>
     <button data-v="facilities" aria-selected="false">공공·교통시설 입지</button>
   </div>
   <figure><img id="img-city" alt="" loading="lazy"><figcaption id="cap-city"></figcaption></figure>
   <div class="table-wrap"><table id="tbl-fac"></table></div>
 
-  <h3>4-6. 6개 도시 인구 이동 네트워크와 DID 제외 지역의 관계</h3>
-  <figure><img src="img/migration_trends.webp" alt="중심 도시 순유출과 바깥쪽 이동 비율" loading="lazy">
-    <figcaption>2015·2020·2024년. 왼쪽: 중심 도시에서 주변 시군구로의 순유출(인구 1천 명당). 오른쪽: 도시권 안 시군구 간 이동 중 시청에서 멀어지는 이동의 비율(50% 위면 교외 쪽 우세).</figcaption></figure>
+  <h3>4-6. 6개 지역 인구 이동 네트워크와 빈 네모의 관계</h3>
+  <figure><img src="img/migration_trends.webp" alt="중심 시·군 순유출과 바깥쪽 이동 비율" loading="lazy">
+    <figcaption>2015·2020·2024년. 왼쪽: 분석 대상 시·군에서 주변 시군구로의 순유출(인구 1천 명당). 오른쪽: 도시권 안 시군구 간 이동 중 군청에서 멀어지는 이동의 비율(50% 위면 바깥쪽 우세).</figcaption></figure>
   <div class="tabs" role="tablist" data-group="city2"></div>
   <div class="tabs" role="tablist" data-group="flowview">
     <button data-v="flows" aria-selected="true">시군구 간 이동 네트워크</button>
@@ -281,7 +284,7 @@ DID 인구밀도   D = P / A
   </div>
   <figure><img id="img-flow" alt="" loading="lazy"><figcaption id="cap-flow"></figcaption></figure>
   <figure><img src="img/lost_did_destinations.webp" alt="빈 네모 이동자 도착지 비교" loading="lazy">
-    <figcaption>빈 네모에서 나간 이동자(추정)와 도시 전체 이동자의 도착지 비교. 창원을 빼면 두 막대가 거의 같다.</figcaption></figure>
+    <figcaption>빈 네모에서 나간 이동자(추정)와 지역 전체 이동자의 도착지 비교. 1km 격자에서 빈 네모가 있는 곳은 양구·제천뿐이다.</figcaption></figure>
 </section>
 
 <!-- 5 -->
@@ -289,47 +292,48 @@ DID 인구밀도   D = P / A
   <h2><span class="no">5</span>주요 결과 해석</h2>
   <div class="finding"><div class="n">1</div><div>
     <h4>도시화 면적은 커지고 인구밀도는 낮아졌다 — 가설 지지</h4>
-    <p>전국 DID 면적은 2015년 2,971km²에서 2024년 3,339km²로 <b>12.4% 늘었지만</b> DID 인구는 2.7% 늘어나는 데 그쳐,
-      DID 밀도는 14,610명에서 13,357명으로 <b>8.6% 낮아졌다</b>. 수도권(면적 +15.4%, 밀도 −9.5%)과 비수도권(+10.1%, −8.5%) 모두 같은 방향이며,
-      4,000명/km² 기준(−8.0%)과 1km 격자(−7.1%)에서도 결과가 같다. 같은 인구를 더 넓은 시가지가 담는, 효율이 떨어지는 도시화가 이어지고 있다.</p></div></div>
+    <p>전국 도시·준밀집지역 면적은 2015년 6,901km²에서 2024년 7,276km²로 <b>5.4% 늘었지만</b> 그 안의 인구는 2.4% 늘어나는 데 그쳐,
+      밀도는 6,675명에서 6,481명으로 <b>2.9% 낮아졌다</b>. 도시(1,500명/km²) 기준으로 보면 더 뚜렷하다(면적 +10.6%, 밀도 −7.5%).
+      수도권(면적 +8.6%, 밀도 −3.9%)과 비수도권(+3.6%, −3.4%) 모두 같은 방향이며, 500m 격자에서도 결과가 같다(300 기준 밀도 −4.5%, 1,500 기준 −9.9%).
+      전체 인구의 91%가 도시화지역에 살고 있어, 같은 인구를 더 넓은 시가지가 담는 효율이 떨어지는 도시화가 이어지고 있다.</p></div></div>
   <div class="finding"><div class="n">2</div><div>
-    <h4>밀도 저하에는 두 갈래가 있다 — 넓어지며 묽어지는 곳, 그대로인데 비는 곳</h4>
-    <p>6개 도시 모두 DID 면적은 1~32% 늘고 밀도는 7~17% 줄었다. 동해(면적 +32%, 밀도 −17%)가 가장 극단적이고 울산(+8.5%, −12.9%)이 뒤를 잇는다.
-      그런데 순위에 든 시군구를 보면 성격이 갈린다. <b>대구 서구·부산 영도구</b>는 DID 면적이 그대로인데 인구가 18% 줄어든 순수한 공동화(스펀지화)이고,
-      <b>동해시·울주군·마산합포구·광주 남구</b>는 DID가 14~32% 넓어지면서 밀도가 떨어진 확장형이다.
-      시설 입지도 비슷하다. 학교·청사·도시철도역의 대부분은 유지 DID에 있고, 2015→2024에 새로 DID가 된 곳에 든 학교는 도시별 2~16곳뿐이다.</p></div></div>
+    <h4>인구감소지역에서는 읍 가장자리가 “얇게” 늘어난다</h4>
+    <p>6곳 모두 도시화지역이 14~60% 넓어지고 밀도는 18~35% 낮아졌다. 그런데 도시화지역 인구는 크게 늘지 않았다(완도 +4%, 청도 +6%, 순창 +15%, 제천 −1%, 양구·괴산 −8~9%).
+      면적이 늘어난 것은 사람이 늘어서가 아니라, 읍 중심지 바로 바깥의 1km 격자 1~3개가 300명/km² 문턱을 넘어 덩어리에 붙었기 때문이다(완도·청도 +3km², 순창 +2km²).
+      즉 이 지역들의 밀도 저하는 <b>중심부가 비면서</b>(양구·괴산) 또는 <b>주변이 묽게 붙으면서</b>(완도·청도·순창) 일어난다. 제천은 둘이 함께 나타나 빈 네모 2km²와 신규 7km²가 동시에 생겼다.
+      시설은 대부분 2015·2024 모두 도시화지역인 중심 격자에 있다. 새로 도시화지역이 된 격자에 든 학교는 지역별 0~2곳뿐이고, 보건지소·보건진료소 같은 보건기관의 70~95%는 도시화지역 밖 면 지역에 흩어져 있다.</p></div></div>
   <div class="finding"><div class="n">3</div><div>
-    <h4>인구 이동 네트워크: 교외화는 2015년 이후 대부분 약해졌다</h4>
-    <p><b>부산</b>은 양산으로의 순유출이 꾸준하고(2015년 5,864명 → 2024년 4,447명) 2024년에는 김해가 더해졌다.
-      <b>광주</b>는 2015년 나주(빛가람 혁신도시)로 4,437명이 순유출됐지만 2024년에는 86명으로 사실상 멈췄다(인구 1천 명당 2.9 → 0.3명).
-      <b>창원</b>도 2015년 부산 강서(명지)·김해로의 유출(1천 명당 4.0명)이 2024년 김해 한 곳(1.0명)으로 줄었다.
-      <b>대구</b>는 2015년 경산 쪽 바깥 흐름에서 2024년 구미·칠곡에서 들어오는 순유입(−1.0명)으로 돌아섰고, 시청에서 멀어지는 이동 비율도 52.5%에서 45.6%로 내려갔다.
-      <b>울산</b>은 양산·기장으로의 유출이 2020년(2.8명)에 가장 컸다. <b>동해</b>는 주변 교외로 빠지는 흐름이 없고 오히려 삼척에서 들어오며, 이동의 절반 가까이가 도시권 밖 먼 곳으로 향한다.</p></div></div>
+    <h4>인구 이동: 교외화보다는 도시권 밖 장거리 유출</h4>
+    <p>분석 대상 시·군에서 반경 30km 안 이웃 시군구로의 순유출은 인구 1천 명당 −1.7~+4.7명으로 작고, 해마다 방향이 바뀐다.
+      <b>청도</b>는 대구 쪽으로 꾸준히 빠지고(1.0 → 2.9명), <b>괴산</b>은 2024년 4.7명으로 가장 컸다. 반대로 <b>양구·순창·제천</b>은 2024년에 주변에서 들어오는 쪽(음수)이었다.
+      더 큰 흐름은 도시권 밖이다. 지역 전체 이동자의 53~82%가 반경 밖 먼 곳으로 나간다(양구 82%, 순창 80%, 완도 75%).
+      대도시의 교외화와 달리, 인구감소지역의 밀도 저하는 주변으로 퍼지는 것이 아니라 <b>밖으로 빠져나가는 것</b>과 함께 일어난다.</p></div></div>
   <div class="finding"><div class="n">4</div><div>
-    <h4>빈 네모의 사람들은 신규 DID로 “이사”하지 않았다 — 창원만 예외</h4>
-    <p>빈 네모가 많은 읍면동에서 나간 이동자의 도착지는 대부분 도시 전체 이동자와 비슷하다. 대구·부산·광주·울산은 56~69%가 기존 DID의 다른 동으로 가고, 신규 DID로 간 비율은 1~6%뿐이다.
-      즉 시가지의 구멍은 주민이 신규 택지로 옮겨 간 결과라기보다 <b>고령화·자연 감소·세대 축소</b>가 기존 시가지 곳곳에서 진행된 결과로 보는 것이 맞다.
-      예외는 <b>창원</b>이다. 빈 네모 이동자는 도시권 다른 시군구(김해 등, 19.0%, 도시 전체 8.9%)와 도시권 밖(40.6%, 전체 32.1%)으로 더 많이 나가고, 시 안 유지 DID로 간 비율은 30.1%(전체 48.2%)로 낮다.
+    <h4>빈 네모의 사람들도 신규 도시화지역으로 “이사”하지 않았다</h4>
+    <p>1km 격자에서 빈 네모가 생긴 곳은 양구(1km²)와 제천(2km²)뿐이다. 제천 빈 네모에서 나간 이동자(추정 531명)는 35%가 시 안의 유지 도시화지역으로, 52%가 도시권 밖으로 갔고,
+      신규 도시화지역으로 간 비율은 1%에 그친다. 이는 제천 전체 이동자(유지 31%, 도시권 밖 53%)와 거의 같다. 양구 빈 네모 이동자(82명)는 88%가 도시권 밖으로 나갔다.
+      시가지의 구멍은 주민이 새 택지로 옮겨 간 결과라기보다 <b>고령화·자연 감소·외부 유출</b>이 기존 시가지에서 진행된 결과로 보는 것이 맞다.
       확장과 공동화가 맞교환이 아니라 <b>따로 동시에</b> 진행되며 평균 밀도를 끌어내린다.</p></div></div>
   <div class="finding"><div class="n">5</div><div>
-    <h4>혁신도시·신도시 정책을 시가화 구역과 밀도의 관점에서 다시 보면</h4>
-    <p>2015→2024 비수도권 DID 면적 증가량(km²) 상위는 세종(+18.0km²), 아산, 천안 서북, 나주(빛가람 혁신도시, 2.3 → 8.5km²), 김해, 대구 달성군 같은 정책 신시가지다.
-      나주는 DID가 3.8배가 됐지만 밀도는 6% 떨어졌고, 김해는 18.7% 넓어지며 밀도가 10.3% 낮아졌다. 인구가 줄어드는 도시권에서는 새 시가지가 채워지는 만큼 기존 시가지의 밀도가 낮아진다.
-      연구 질문 2와 연결하면, 학교·청사·도시철도역 같은 기존 인프라가 남아 있는 빈 네모와 그 주변 유지 DID가 <b>“구멍을 메우는” 재생의 우선 대상</b>이며,
-      신규 확장보다 기존 시가지의 접근성을 살리는 방향이 축소 시대의 기준이 될 수 있다.</p></div></div>
-  <p class="note"><b>한계</b> · 분석 기간이 9년으로 짧다(2015 이전은 집계 기준이 달라 제외). 격자 인구의 소지역 비공개 처리, MDIS 이동자료는 2015·2020·2024 3개 연도만 사용,
-    빈 네모 이동자는 읍면동 단위 비례 추정, 도시 중심은 시청 한 점으로 고정했다.</p>
+    <h4>축소의 기준: 유지 도시화지역 안의 기존 인프라</h4>
+    <p>비수도권 면적 증가율 상위는 진천(+64.7%), 세종(+57.5%), 나주(+40.7%)처럼 산업단지·행정도시·혁신도시가 들어서 밀도도 함께 오른 곳과,
+      완도·청도·순창·계룡·증평처럼 면적만 늘고 밀도가 떨어진 곳으로 나뉜다. 인구감소지역 6곳은 모두 뒤쪽이다.
+      연구 질문 2와 연결하면, 학교·군청·버스터미널·철도역이 모여 있는 <b>2015·2024 모두 도시화지역인 읍 중심 격자</b>가 인구감소지역에서 지켜야 할 핵심이고,
+      문턱을 겨우 넘어 붙은 가장자리 격자로 시설을 넓히기보다 중심의 접근성을 살리는 방향이 축소 시대의 기준이 될 수 있다.</p></div></div>
+  <p class="note"><b>한계</b> · 분석 기간이 9년으로 짧다(2015 이전은 집계 기준이 달라 제외). 작은 군은 1km 격자 5~8개로 이뤄져 격자 하나의 변화가 수십 %로 나타난다.
+    격자 인구의 소지역 비공개 처리, MDIS 이동자료는 2015·2020·2024 3개 연도만 사용, 빈 네모 이동자는 읍면동 단위 비례 추정, 도시권 중심은 군청 한 점으로 고정했다.
+    SGIS의 빈틈 메우기는 하지 않았다.</p>
 </section>
 
 <section id="src">
   <h2>출처 · 저장소</h2>
-  <p>코드와 결과 표, DID 폴리곤: <a href="https://github.com/Seon-Cho/W8_DID-MAP">github.com/Seon-Cho/W8_DID-MAP</a>.
+  <p>코드와 결과 표, 도시화지역 폴리곤: <a href="https://github.com/Seon-Cho/W8_DID-MAP">github.com/Seon-Cho/W8_DID-MAP</a>.
     원자료(SGIS 격자 인구, MDIS 마이크로데이터, 카카오 검색 결과)는 제공 기관 이용 조건 때문에 저장소에 올리지 않았고, 받는 방법을 README에 적었다.</p>
-  <p class="muted">자료: 통계청 SGIS 격자통계·도시화지역 경계, 통계청 국내인구이동통계(MDIS), 공공데이터포털, 국가철도공단, 국토교통부, 한국도로공사, 카카오 로컬,
-    OpenStreetMap 기여자, vuski/admdongkor(CC BY 4.0), Esri·CARTO 배경지도.</p>
+  <p class="muted">자료: 통계청 SGIS 격자통계·도시화지역 경계, 통계청 국내인구이동통계(MDIS), 행정안전부 인구감소지역, 공공데이터포털, 국가철도공단, 한국도로공사, 카카오 로컬,
+    OpenStreetMap 기여자, vuski/admdongkor(CC BY 4.0), Esri·CARTO 배경지도. 도시화 등급: Eurostat, <i>Applying the Degree of Urbanisation</i> (2021).</p>
 </section>
 </main>
-<footer><div class="in">스마트시티 융합기술세미나 2026-2 · 과제 3 · DID MAP</div></footer>
+<footer><div class="in">스마트시티 융합기술세미나 2026-2 · 과제 3 · 도시화지역 지도</div></footer>
 
 <script src="data.js"></script>
 <script src="carto-key.js" onerror="void 0"></script>
@@ -345,18 +349,18 @@ const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v
   const s = D.summary, last = s.year.length - 1, f = s.year.indexOf(D.period[0]);
   const popChg = 100 * (s.did_pop[last] / s.did_pop[f] - 1);
   document.getElementById("stats").innerHTML = [
-    [`+${fmt(D.national.area_chg_pct, 1)}%`, "up", `DID 면적 ${fmt(s.did_area_km2[f])} → ${fmt(s.did_area_km2[last])} km² (${D.period.join("→")})`],
-    [`+${fmt(popChg, 1)}%`, "", `DID 인구 ${fmt(s.did_pop[f] / 1e6, 1)} → ${fmt(s.did_pop[last] / 1e6, 1)}백만 명`],
-    [`${fmt(D.national.density_chg_pct, 1)}%`, "down", `DID 밀도 ${fmt(s.did_density[f])} → ${fmt(s.did_density[last])} 명/km²`],
-    ["6개 도시", "", "대구·부산·광주·동해·창원·울산 확대 분석"],
+    [`+${fmt(D.national.area_chg_pct, 1)}%`, "up", `도시화지역 면적 ${fmt(s.did_area_km2[f])} → ${fmt(s.did_area_km2[last])} km² (${D.period.join("→")})`],
+    [`+${fmt(popChg, 1)}%`, "", `도시화지역 인구 ${fmt(s.did_pop[f] / 1e6, 1)} → ${fmt(s.did_pop[last] / 1e6, 1)}백만 명`],
+    [`${fmt(D.national.density_chg_pct, 1)}%`, "down", `도시화지역 밀도 ${fmt(s.did_density[f])} → ${fmt(s.did_density[last])} 명/km²`],
+    ["6개 지역", "", "완도·청도·양구·순창·괴산·제천 (인구감소지역) 확대 분석"],
   ].map(([b, c, t]) => `<div class="stat"><b class="${c}">${b}</b><span>${t}</span></div>`).join("");
 })();
 
 // 전국 요약표
 (() => {
   const s = D.summary;
-  let h = "<thead><tr><th>연도</th><th class='num'>DID 수</th><th class='num'>면적(km²)</th><th class='num'>인구</th>" +
-          "<th class='num'>밀도(명/km²)</th><th class='num'>전체 인구 중 DID 비율</th></tr></thead><tbody>";
+  let h = "<thead><tr><th>연도</th><th class='num'>덩어리 수</th><th class='num'>면적(km²)</th><th class='num'>인구</th>" +
+          "<th class='num'>밀도(명/km²)</th><th class='num'>전체 인구 중 비율</th></tr></thead><tbody>";
   s.year.forEach((y, i) => {
     h += `<tr><td>${y}</td><td class="num">${s.n_did[i]}</td><td class="num">${fmt(s.did_area_km2[i], 1)}</td>` +
          `<td class="num">${fmt(s.did_pop[i])}</td><td class="num">${fmt(s.did_density[i])}</td>` +
@@ -394,14 +398,14 @@ const lineChart = (id, key, title, unit) => new Chart(document.getElementById(id
       tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${fmt(c.parsed.y)} ${unit}` } } },
     scales: { y: { ticks: { callback: (v) => fmt(v) } } } },
 });
-lineChart("c-density", "did_density", "DID 인구밀도 (명/km²)", "명/km²");
-lineChart("c-area", "did_area_km2", "DID 면적 (km²)", "km²");
+lineChart("c-density", "did_density", "도시화지역 인구밀도 (명/km²)", "명/km²");
+lineChart("c-area", "did_area_km2", "도시화지역 면적 (km²)", "km²");
 
-// 확대 분석한 6개 도시의 시군구 = 밀도 감소 Top 10 중 수도권(서울·경기·인천) 밖
-const FOCUS = (r) => !["서울", "경기", "인천"].includes(r.sido);
+// 확대 분석한 인구감소지역 6곳
+const FOCUS = (r) => !!r.focus;
 const barChart = (id, rows, key, ref, refLabel, tip, color, mark = () => false, sym = "★ ") => new Chart(document.getElementById(id), {
   type: "bar",
-  data: { labels: rows.map((r) => `${mark(r) ? sym : ""}${r.SIGUNGU_NM} (${r.sido})`),
+  data: { labels: rows.map((r) => `${mark(r) ? (typeof sym === "function" ? sym(r) : sym) : ""}${r.SIGUNGU_NM} (${r.sido})`),
           datasets: [{ data: rows.map((r) => r[key]), backgroundColor: color, borderRadius: 4 }] },
   options: { indexAxis: "y", maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: tip } } },
@@ -421,24 +425,27 @@ barChart("c-toparea", D.top_area, "area_chg_pct", D.national.area_chg_pct,
   (c) => { const r = D.top_area[c.dataIndex];
     return [`면적 ${fmt(r.area_2015, 1)} → ${fmt(r.area_2024, 1)} km² (+${fmt(r.area_chg_km2, 1)} km², +${r.area_chg_pct}%)`,
             `밀도 변화 ${r.density_chg_pct > 0 ? "+" : ""}${r.density_chg_pct}%`]; },
-  D.top_area.map((r) => r.density_chg_pct < 0 ? "#e67e22" : "#f3d3b5"), (r) => r.density_chg_pct < 0, "▼ ");
+  D.top_area.map((r) => r.density_chg_pct < 0 ? "#e67e22" : "#f3d3b5"), (r) => r.density_chg_pct < 0 || FOCUS(r),
+  (r) => (FOCUS(r) ? "★" : "") + (r.density_chg_pct < 0 ? "▼ " : " "));
 
-// 도시 탭
-const CITIES = ["대구", "부산", "광주", "동해", "창원", "울산"];
-const FAC = {
-  대구: [["학교", 447, 381, 16, 3, 47], ["2000년 이후 설립 학교", 108, 85, 11, 0, 12], ["청사", 148, 140, 0, 0, 8], ["도시철도역", 91, 81, 2, 0, 8], ["고속도로 IC", 15, 3, 0, 1, 11]],
-  부산: [["학교", 615, 537, 13, 8, 57], ["2000년 이후 설립 학교", 101, 81, 10, 0, 10], ["청사", 221, 201, 4, 2, 14], ["도시철도역", 134, 109, 3, 0, 22], ["고속도로 IC", 10, 0, 0, 0, 10]],
-  광주: [["학교", 315, 272, 2, 1, 40], ["2000년 이후 설립 학교", 90, 82, 2, 1, 5], ["청사", 102, 88, 2, 1, 11], ["도시철도역", 19, 14, 0, 1, 4], ["고속도로 IC", 4, 0, 0, 0, 4]],
-  동해: [["학교", 27, 9, 8, 1, 9], ["2000년 이후 설립 학교", 1, 1, 0, 0, 0], ["청사", 10, 5, 2, 1, 2], ["철도역", 2, 0, 1, 0, 1], ["고속도로 IC", 2, 0, 0, 0, 2]],
-  창원: [["학교", 226, 160, 10, 9, 47], ["2000년 이후 설립 학교", 59, 40, 6, 3, 10], ["청사", 66, 53, 1, 0, 12], ["보건기관", 16, 6, 1, 0, 9], ["고속도로 IC", 4, 0, 0, 0, 4]],
-  울산: [["학교", 245, 172, 11, 3, 59], ["2000년 이후 설립 학교", 98, 68, 6, 2, 22], ["청사", 59, 44, 1, 0, 14], ["보건기관", 24, 4, 0, 0, 20], ["고속도로 IC", 8, 1, 0, 0, 7]],
-};
-const state = { city: "대구", cityview: "city", city2: "대구", flowview: "flows" };
+// 지역 탭
+const CITIES = D.cities.map((c) => c.city);
+(() => {
+  const pct = (a, b) => { const v = 100 * (b / a - 1); return `<td class="num ${v < 0 ? "neg" : "pos"}">${v > 0 ? "+" : ""}${fmt(v, 1)}%</td>`; };
+  let h = "<thead><tr><th>지역</th><th class='num'>면적 2015 (km²)</th><th class='num'>2024</th><th class='num'>면적 변화</th>" +
+          "<th class='num'>밀도 2015</th><th class='num'>2024</th><th class='num'>밀도 변화</th></tr></thead><tbody>";
+  D.cities.forEach((c) => {
+    h += `<tr><td>${c.name}</td><td class="num">${fmt(c.area0)}</td><td class="num">${fmt(c.area1)}</td>${pct(c.area0, c.area1)}` +
+         `<td class="num">${fmt(c.dens0)}</td><td class="num">${fmt(c.dens1)}</td>${pct(c.dens0, c.dens1)}</tr>`;
+  });
+  document.getElementById("tbl-cities").innerHTML = h + "</tbody>";
+})();
+const state = { city: CITIES[0], cityview: "city", city2: CITIES[0], flowview: "flows" };
 const CAP = {
-  city: (c) => `${c} · 왼쪽: 2015→2024 DID 변화, 오른쪽: 2024년 DID(4,000·2,000명/km²)와 SGIS 도시화지역 비교. 굵은 선은 시 경계, 보라색 점선은 Top 10 시군구.`,
-  facilities: (c) => `${c} · DID 변화 위에 학교(속 빈 기호=2000년 이전, 채운 기호=이후 설립), 청사, 보건기관, 철도·도시철도, 버스터미널, 고속도로·IC를 얹었다.`,
-  flows: (c) => `${c} · 2015·2024년 시군구 순이동률(색)과 순이동 상위 15개 흐름(화살표). 빨강=시청에서 멀어지는 방향, 파랑=시청 쪽.`,
-  lost: (c) => `${c} · 빈 네모가 있는 읍면동에서 나간 이동(빈 네모 인구 비율로 가중)의 상위 흐름과 도착지 구성.`,
+  city: (c) => `${c} · 왼쪽: 2015→2024 도시화지역 변화, 오른쪽: 2024년 직접 추출한 도시(1,500)·도시·준밀집(300)과 SGIS 도시화지역 비교. 굵은 선은 시·군 경계.`,
+  facilities: (c) => `${c} · 도시화지역 변화 위에 학교(속 빈 기호=2000년 이전, 채운 기호=이후 설립), 청사, 보건기관, 철도역, 버스터미널, 고속도로·IC를 얹었다.`,
+  flows: (c) => `${c} · 2015·2024년 시군구 순이동률(색)과 순이동 상위 15개 흐름(화살표). 빨강=군청에서 멀어지는 방향, 파랑=군청 쪽.`,
+  lost: (c) => `${c} · 빈 네모가 있는 읍면동에서 나간 이동(빈 네모 인구 비율로 가중)의 상위 흐름과 도착지 구성. 빈 네모가 없는 지역은 지역 전체 이동만 보인다.`,
 };
 function render() {
   document.getElementById("img-city").src = `img/${state.cityview}_${state.city}.webp`;
@@ -447,9 +454,9 @@ function render() {
   document.getElementById("img-flow").src = `img/${state.flowview}_${state.city2}.webp`;
   document.getElementById("img-flow").alt = CAP[state.flowview](state.city2);
   document.getElementById("cap-flow").textContent = CAP[state.flowview](state.city2);
-  let h = "<thead><tr><th>시설 (" + state.city + " 시 경계 안)</th><th class='num'>전체</th><th class='num'>유지 DID</th>" +
-          "<th class='num'>신규 DID</th><th class='num'>빈 네모</th><th class='num'>DID 밖</th></tr></thead><tbody>";
-  FAC[state.city].forEach((r) => { h += `<tr><td>${r[0]}</td>` + r.slice(1).map((v) => `<td class="num">${v}</td>`).join("") + "</tr>"; });
+  let h = "<thead><tr><th>시설 (" + state.city + " 경계 안)</th><th class='num'>전체</th>" +
+          D.fac_cols.map((c) => `<th class='num'>${c}</th>`).join("") + "</tr></thead><tbody>";
+  D.fac[state.city].forEach((r) => { h += `<tr><td>${r[0]}</td>` + r.slice(1).map((v) => `<td class="num">${v}</td>`).join("") + "</tr>"; });
   document.getElementById("tbl-fac").innerHTML = h + "</tbody>";
   document.querySelectorAll(".tabs").forEach((t) => t.querySelectorAll("button").forEach((b) =>
     b.setAttribute("aria-selected", String(state[t.dataset.group] === b.dataset.v))));
@@ -463,13 +470,14 @@ document.querySelectorAll(".tabs").forEach((t) => t.addEventListener("click", (e
 }));
 render();
 
-// 전국 DID 동적 지도 (Leaflet + CARTO)
+// 전국 도시화지역 동적 지도 (Leaflet + CARTO)
 (() => {
-  const YEARS = [2000, 2005, 2010, 2015, 2020, 2024], THRS = [2000, 4000];
+  const YEARS = [2000, 2005, 2010, 2015, 2020, 2024], THRS = [300, 1500];
   const VIEWS = [...YEARS.map(String), "change"];
-  const st = { view: "2024", thr: new Set([2000]), sel: null, playing: null };
-  const FILL = { 2000: "#ee9b4f", 4000: "#b23a2b" };
-  const ZONE = { kept: ["#7f8c8d", "2015·2024 모두 DID"], new: ["#e67e22", "2024년 새로 DID"], lost: ["#d32f2f", "DID에서 빠짐(빈 네모)"] };
+  const st = { view: "2024", thr: new Set([300]), sel: null, playing: null };
+  const FILL = { 300: "#ee9b4f", 1500: "#b23a2b" };
+  const NAME = { 300: "도시·준밀집", 1500: "도시" };
+  const ZONE = { kept: ["#7f8c8d", "2015·2024 모두"], new: ["#e67e22", "2024년 새로"], lost: ["#d32f2f", "빠짐(빈 네모)"] };
   const DARK = { kept: "#2c3e50", new: "#9a4500", lost: "#7b0d0d" };
 
   const map = L.map("lmap", { minZoom: 6, maxZoom: 15, zoomSnap: 0.5 }).setView([36.1, 127.8], 7);
@@ -504,7 +512,7 @@ render();
     data.forEach((gj, i) => {
       const t = thrs[i], outline = st.view === "change" && i > 0;
       const style = st.view !== "change"
-        ? () => ({ stroke: false, fillColor: FILL[t], fillOpacity: t === 4000 ? 0.7 : 0.6 })
+        ? () => ({ stroke: false, fillColor: FILL[t], fillOpacity: t === 1500 ? 0.7 : 0.6 })
         : outline
           ? (f) => ({ color: DARK[f.properties.z], weight: 1.6, dashArray: "4 3", fill: false })
           : (f) => f.properties.z === "lost"
@@ -519,13 +527,13 @@ render();
     const sw = (css) => `<i class="sw" style="${css}"></i>`;
     let h = "";
     if (st.view !== "change") {
-      h = thrs.map((t) => `<span>${sw(`background:${FILL[t]};opacity:${t === 4000 ? .8 : .7}`)}${st.view}년 DID · ${fmt(t)}명/km² 이상</span>`).join("");
+      h = thrs.map((t) => `<span>${sw(`background:${FILL[t]};opacity:${t === 1500 ? .8 : .7}`)}${st.view}년 ${NAME[t]} · ${fmt(t)}명/km² 이상</span>`).join("");
     } else {
       const [a, b] = thrs;
-      if (a) h += Object.entries(ZONE).map(([z, [c, l]]) => `<span>${sw(z === "lost" ? `background:rgba(211,47,47,.12);border:2px solid ${c}` : `background:${c}`)}${l}</span>`).join("") + `<span>(${fmt(a)}명/km²)</span>`;
-      if (b) h += Object.entries(DARK).map(([z, c]) => `<span>${sw(`border:2px dashed ${c}`)}${ZONE[z][1]}</span>`).join("") + `<span>(${fmt(b)}명/km², 점선)</span>`;
+      if (a) h += Object.entries(ZONE).map(([z, [c, l]]) => `<span>${sw(z === "lost" ? `background:rgba(211,47,47,.12);border:2px solid ${c}` : `background:${c}`)}${l}</span>`).join("") + `<span>(${NAME[a]} ${fmt(a)}명/km²)</span>`;
+      if (b) h += Object.entries(DARK).map(([z, c]) => `<span>${sw(`border:2px dashed ${c}`)}${ZONE[z][1]}</span>`).join("") + `<span>(${NAME[b]} ${fmt(b)}명/km², 점선)</span>`;
     }
-    document.getElementById("map-legend").innerHTML = h || "<span>밀도 기준을 하나 이상 켜세요.</span>";
+    document.getElementById("map-legend").innerHTML = h || "<span>도시·준밀집이나 도시를 하나 이상 켜세요.</span>";
   }
 
   // 시·군 경계(특별·광역시는 하나): 마우스를 올리면 강조, 누르면 확대 + 그래프 전환
@@ -556,20 +564,20 @@ render();
   });
 
   // 오른쪽 그래프
-  const LINE = { 2000: "#d9822b", 4000: "#b23a2b" };
+  const LINE = { 300: "#d9822b", 1500: "#b23a2b" };
   const mk = (id, title, unit) => new Chart(document.getElementById(id), {
     type: "line",
-    data: { labels: YEARS, datasets: THRS.map((t) => ({ label: `${fmt(t)}명/km²`, data: [], borderColor: LINE[t],
+    data: { labels: YEARS, datasets: THRS.map((t) => ({ label: NAME[t], data: [], borderColor: LINE[t],
       backgroundColor: LINE[t], tension: 0.2, borderWidth: 2.2, spanGaps: false,
       segment: { borderDash: (c) => c.p0DataIndex === 2 ? [4, 4] : undefined } })) },
     options: { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
       plugins: { title: { display: true, text: title, color: css("--ink"), font: { size: 14, weight: 600 } },
         legend: { labels: { boxWidth: 12, font: { size: 12 } } },
-        tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y == null ? "DID 없음" : fmt(c.parsed.y, unit === "km²" ? 1 : 0) + " " + unit}` } } },
+        tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y == null ? "없음" : fmt(c.parsed.y, unit === "km²" ? 1 : 0) + " " + unit}` } } },
       scales: { y: { ticks: { callback: (v) => fmt(v) } } } },
   });
-  const cArea = mk("c-sgg-area", "DID 면적 (km²)", "km²");
-  const cDens = mk("c-sgg-dens", "DID 인구밀도 (명/km²)", "명/km²");
+  const cArea = mk("c-sgg-area", "도시화지역 면적 (km²)", "km²");
+  const cDens = mk("c-sgg-dens", "도시화지역 인구밀도 (명/km²)", "명/km²");
 
   function side() {
     if (!series) return;
@@ -587,13 +595,13 @@ render();
       });
       ch.update();
     });
-    const d = s[2000], i0 = YEARS.indexOf(2015), i1 = YEARS.length - 1;
+    const d = s[300], i0 = YEARS.indexOf(2015), i1 = YEARS.length - 1;
     let txt = "지도에서 시·군이나 특별·광역시를 누르면 그 지역의 그래프로 바뀐다.";
     if (d && d.area[i0] && d.area[i1]) {
       const D0 = d.pop[i0] / d.area[i0], D1 = d.pop[i1] / d.area[i1], pct = (a, b) => `${b >= a ? "+" : ""}${fmt(100 * (b / a - 1), 1)}%`;
-      txt = `2015→2024 (2,000명/km²) · 면적 ${fmt(d.area[i0], 1)} → ${fmt(d.area[i1], 1)} km² (${pct(d.area[i0], d.area[i1])}), ` +
+      txt = `2015→2024 (도시·준밀집) · 면적 ${fmt(d.area[i0], 1)} → ${fmt(d.area[i1], 1)} km² (${pct(d.area[i0], d.area[i1])}), ` +
             `밀도 ${fmt(D0)} → ${fmt(D1)} 명/km² (${pct(D0, D1)})` + (p ? "" : ". " + txt);
-    } else if (p) txt = d ? "2015 또는 2024년에 DID가 없어 변화율을 계산하지 않았다." : "2000~2024년 DID가 없는 지역이다.";
+    } else if (p) txt = d ? "2015 또는 2024년에 도시·준밀집지역이 없어 변화율을 계산하지 않았다." : "2000~2024년 도시화지역이 없는 지역이다.";
     document.getElementById("side-sub").textContent = txt;
   }
   fetch("map/series.json").then((r) => r.json()).then((j) => { series = j; side(); });

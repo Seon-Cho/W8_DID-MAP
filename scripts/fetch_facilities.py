@@ -54,11 +54,12 @@ MIN_RECT_DEG = 0.01  # 카카오 검색 범위를 이보다 좁게(약 1 km) 쪼
 DOTENV_DEFAULT = Path.home() / "26-2. smart-city-seminar" / "professor_data" / "code-main" / ".env"
 
 # 도시철도 권역 → 확대도 도시
-URBAN_RAIL_REGION = {"부산": "부산", "대구": "대구", "광주": "광주"}
+URBAN_RAIL_REGION = {}  # 6개 지역 모두 도시철도 없음
 HEALTH_NAME = r"보건소|보건지소|보건진료소|보건의료원"
 CENTER_NAME = r"행정복지센터|주민센터|읍사무소|면사무소"
 # 보건기관 표준데이터 중 주소 검색할 대상: 6개 도시와 바로 붙은 시군만
-HEALTH_SIDO = r"부산광역시|대구광역시|광주광역시|울산광역시|광주 |동해|삼척|강릉|창원|김해|양산|경주|경산|칠곡|담양|나주|장성|화순"
+HEALTH_SIDO = (r"완도|해남|강진|청도|경산|밀양|창녕|양구|인제|화천|춘천|순창|담양|임실|남원|정읍|곡성|"
+               r"괴산|충주|음성|증평|청주|문경|제천|단양|영월|원주")
 
 
 # ---------------------------------------------------------------- 공통
@@ -109,6 +110,8 @@ def hit_point(h):
 
 
 def to_gdf(rows, crs):
+    if not rows:  # 해당 시설이 없는 지역 (예: 도시철도 없는 군)
+        return gpd.GeoDataFrame({"name": [], "subkind": [], "source": []}, geometry=[], crs=crs)
     g = gpd.GeoDataFrame(rows, geometry="geometry", crs=4326).to_crs(crs)
     return g
 
@@ -204,9 +207,9 @@ def sigungu_query_names(row):
     return [f"{parts[-1]}청", f"{nm}청"] if len(parts) > 1 else [f"{nm}청"]
 
 
-SIDO_HALL = {"21": "부산광역시청", "22": "대구광역시청", "24": "광주광역시청"}
-SIDO_NAME = {"21": "부산광역시", "22": "대구광역시", "24": "광주광역시", "35": "전북특별자치도",
-             "36": "전라남도", "38": "경상남도"}
+SIDO_HALL = {}
+SIDO_NAME = {"32": "강원특별자치도", "33": "충청북도", "35": "전북특별자치도", "36": "전라남도",
+             "37": "경상북도"}
 
 
 def build_townhalls(areas, crs, geo):

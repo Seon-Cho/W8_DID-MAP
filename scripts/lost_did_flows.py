@@ -33,9 +33,9 @@ OUT_TAB = da.OUT / "tables"
 RES, THR, Y0, Y1 = da.MAIN_RES, da.MAIN_THR, da.CHANGE_START, da.YEARS[-1]
 # 이동 연도 → 행정동 경계 판
 VERSION = {2015: "20160201", 2020: "20200701", 2024: "20240701"}
-ZONES = ["유지 DID", "신규 DID", "빈 네모", "비DID"]
+ZONES = ["유지 도시화지역", "신규 도시화지역", "빈 네모", "비도시화지역"]
 DEST = ZONES + ["도시권 다른 시군구", "도시권 밖"]
-DEST_COLORS = {"유지 DID": "#7f8c8d", "신규 DID": "#e67e22", "빈 네모": "#d32f2f", "비DID": "#c5b358",
+DEST_COLORS = {"유지 도시화지역": "#7f8c8d", "신규 도시화지역": "#e67e22", "빈 네모": "#d32f2f", "비도시화지역": "#c5b358",
                "도시권 다른 시군구": "#5c6bc0", "도시권 밖": "#bdbdbd"}
 ADM_NOTE = "행정동 경계: vuski/admdongkor (CC BY 4.0)"
 
@@ -152,14 +152,14 @@ def plot_city(name, pairs, sigungu, results, dongs24, summary, top=18):
         f"  {k}: {s[k]:.0f}%  (도시 전체 {base[k]:.0f}%)" for k in DEST)
     ax.text(0.99, 0.01, txt, transform=ax.transAxes, ha="right", va="bottom", fontsize=9, zorder=10,
             bbox=dict(boxstyle="round", fc="white", ec="#999", alpha=0.9))
-    handles = [plt.Rectangle((0, 0), 1, 1, color="#7f8c8d", alpha=0.5, label=f"{Y0}·{Y1} 모두 DID"),
-               plt.Rectangle((0, 0), 1, 1, color="#e67e22", alpha=0.5, label=f"{Y1}년 새로 DID"),
+    handles = [plt.Rectangle((0, 0), 1, 1, color="#7f8c8d", alpha=0.5, label=f"{Y0}·{Y1} 모두 도시화지역"),
+               plt.Rectangle((0, 0), 1, 1, color="#e67e22", alpha=0.5, label=f"{Y1}년 새로 도시화지역"),
                plt.Rectangle((0, 0), 1, 1, fc=to_rgba("#d32f2f", 0.12), ec="#d32f2f", lw=1.4,
-                             label=f"{Y1}년에 DID에서 빠짐 (빈 네모)"),
+                             label=f"{Y1}년에 도시화지역에서 빠짐 (빈 네모)"),
                Line2D([], [], color="#4a148c", lw=3, label=f"빈 네모 동 → 도착 동 이동 상위 {top}")]
     ax.legend(handles=handles, loc="upper left", fontsize=9, frameon=True)
     ax.text(0.005, 0.03, ADM_NOTE, transform=ax.transAxes, fontsize=6.5, color="#777", zorder=10)
-    ax.set_title(f"{name} · 빈 네모(DID에서 빠진 격자) 사람들은 어디로 갔나\n"
+    ax.set_title(f"{name} · 빈 네모(도시화지역에서 빠진 격자) 사람들은 어디로 갔나\n"
                  "2015·2020·2024년 읍면동 간 이동 합계, 출발 동의 빈 네모 인구 비율로 가중한 추정치",
                  fontsize=12)
     fig.tight_layout()
