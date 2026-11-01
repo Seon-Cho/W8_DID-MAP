@@ -48,6 +48,40 @@ def images():
         im.save(dest / f"{name}.webp", "WEBP", quality=82, method=6)
 
 
+TYPE_MIN_KM2 = 5
+TYPE_BAND = 5  # 면적·밀도 변화가 모두 ±5% 안이면 정체
+
+
+def unit_type(da, dd):
+    if abs(da) < TYPE_BAND and abs(dd) < TYPE_BAND:
+        return "정체"
+    if da >= 0:
+        return "확산·저밀화" if dd < 0 else "성장·고밀화"
+    return "축소·공동화" if dd < 0 else "가장자리 탈락"
+
+
+def typology():
+    """시·군(동적 지도 단위)별 2015→2024 도시·준밀집지역 면적·밀도 변화와 유형."""
+    m = SITE / "map"
+    series = json.loads((m / "series.json").read_text(encoding="utf-8"))
+    units = json.loads((m / "units.geojson").read_text(encoding="utf-8"))
+    name = {f["properties"]["cd"]: " ".join(filter(None, [f["properties"]["sd"], f["properties"]["nm"]]))
+            for f in units["features"]}
+    i0, i1 = series["years"].index(Y0), series["years"].index(Y1)
+    rows = []
+    for cd, v in series["units"].items():
+        d = v.get(str(THR))
+        if not d or min(d["area"][i0], d["area"][i1]) < TYPE_MIN_KM2:
+            continue
+        a0, a1, p0, p1 = d["area"][i0], d["area"][i1], d["pop"][i0], d["pop"][i1]
+        da, dd = 100 * (a1 / a0 - 1), 100 * ((p1 / a1) / (p0 / a0) - 1)
+        rows.append({"cd": cd, "name": name.get(cd, cd), "area0": a0, "area1": a1, "da": round(da, 1),
+                     "dd": round(dd, 1), "dp": round(100 * (p1 / p0 - 1), 1), "type": unit_type(da, dd)})
+    df = pd.DataFrame(rows)
+    df.to_csv(OUT / "tables" / f"unit_typology_{Y0}_{Y1}.csv", index=False, encoding="utf-8-sig")
+    return df.to_dict("records")
+
+
 def chart_data():
     t = OUT / "tables"
     summ = pd.read_csv(t / "did_summary.csv")
@@ -109,6 +143,7 @@ def chart_data():
         "top_area": area[["sido", "SIGUNGU_NM", f"area_{Y0}", f"area_{Y1}", "area_chg_km2", "area_chg_pct",
                           "density_chg_pct", "decline92", "focus"]].to_dict("records"),
         "cities": cities,
+        "typology": typology(),
         "fac_cols": zone_cols,
         "fac": fac_rows,
         "migration": mig[["city", "year", "core_net_out_ring_per1000", "outward_share"]].round(1)

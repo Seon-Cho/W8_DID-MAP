@@ -265,6 +265,15 @@
   <figure><img id="img-city" alt="" loading="lazy"><figcaption id="cap-city"></figcaption></figure>
   <div class="table-wrap"><table id="tbl-fac"></table></div>
 
+
+  <h3>4-6. 면적–밀도 변화로 본 시·군 유형</h3>
+  <div class="chart tall"><div class="box"><canvas id="c-type"></canvas></div></div>
+  <div class="table-wrap"><table id="tbl-type"></table></div>
+  <p class="muted">2015·2024년 모두 도시·준밀집지역이 5km² 이상인 시·군(특별·광역시는 하나) 대상. 가로축 면적 변화, 세로축 밀도 변화, 점 크기는 2024년 면적.
+    면적·밀도 변화가 모두 ±5% 안이면 정체로 묶었다. 점에 마우스를 올리면 이름과 인구 변화가 보인다. 확대 분석한 인구감소지역은 테두리를 굵게 했다.</p>
+  <p class="note"><b>가장자리 탈락</b> · 면적이 줄고 밀도가 오른 곳은 압축된 것이 아니다. 인구는 줄었고(중앙값 −4.5%), 가장자리의 밀도 낮은 격자가 300명/km² 아래로 떨어져 빠지면서
+    남은 부분의 평균 밀도가 올라갔다. 문턱값으로 경계를 긋는 방식에서 생기는 효과다.
+    또 밀도 변화는 대략 인구 변화 − 면적 변화이므로, 이 유형은 “면적이 넓어진 만큼 인구가 따라왔는가”를 보는 것이다.</p>
 </section>
 
 <!-- 5 -->
@@ -283,6 +292,12 @@
       즉 이 지역들의 밀도 저하는 <b>중심부가 비면서</b>(양구·괴산) 또는 <b>주변이 묽게 붙으면서</b>(완도·청도·순창) 일어난다. 제천은 둘이 함께 나타나 빈 네모 2km²와 신규 7km²가 동시에 생겼다.
       시설은 대부분 2015·2024 모두 도시화지역인 중심 격자에 있다. 새로 도시화지역이 된 격자에 든 학교는 지역별 0~2곳뿐이고, 보건지소·보건진료소 같은 보건기관의 70~95%는 도시화지역 밖 면 지역에 흩어져 있다.</p></div></div>
   <div class="finding"><div class="n">3</div><div>
+    <h4>시·군 유형: 가장 흔한 것은 “넓어지며 묽어지는” 확산·저밀화형</h4>
+    <p>면적·밀도 변화로 시·군 144곳을 나누면 <b>확산·저밀화</b>(면적↑ 밀도↓)가 59곳으로 가장 많고, 인구는 중앙값 −2.6%로 오히려 줄었다. 인천·대전·광주·울산·창원·청주 같은 큰 도시와 분석한 인구감소지역 6곳이 모두 여기에 든다.
+      <b>성장·고밀화</b>(28곳, 세종·진천·나주·용인 등)는 인구가 크게 는 곳(중앙값 +29%)으로, 신도시·혁신도시·산업단지가 들어선 곳이다.
+      <b>가장자리 탈락</b>(36곳, 동해·익산·정읍·순천 등)은 인구가 줄며 가장자리가 문턱 아래로 떨어진 곳이고, 부산·대구 같은 대도시는 <b>정체</b>(17곳)에 가깝다.
+      서울은 면적과 밀도가 함께 조금 줄어든 <b>축소·공동화</b>(4곳)다. 뚜렷이 갈라진 무리라기보다 연속적인 분포이므로, 유형은 경향을 읽는 틀로 쓴다.</p></div></div>
+  <div class="finding"><div class="n">4</div><div>
     <h4>축소의 기준: 유지 도시화지역 안의 기존 인프라</h4>
     <p>비수도권 면적 증가율 상위는 진천(+64.7%), 세종(+57.5%), 나주(+40.7%)처럼 산업단지·행정도시·혁신도시가 들어서 밀도도 함께 오른 곳과,
       완도·청도·순창·계룡·증평처럼 면적만 늘고 밀도가 떨어진 곳으로 나뉜다. 인구감소지역 6곳은 모두 뒤쪽이다.
@@ -435,6 +450,53 @@ document.querySelectorAll(".tabs").forEach((t) => t.addEventListener("click", (e
   state[t.dataset.group] = b.dataset.v; render();
 }));
 render();
+
+// 4-6 시·군 유형 산점도
+(() => {
+  const T = D.typology;
+  const TYPES = [["확산·저밀화", "#b23a2b"], ["성장·고밀화", "#2e6fb7"], ["가장자리 탈락", "#e67e22"], ["정체", "#9e9e9e"], ["축소·공동화", "#6a3d9a"]];
+  const focus = new Set(D.cities.map((c) => c.name));
+  const isFocus = (r) => focus.has(r.name.split(" ").pop());
+  const sign = (v) => `${v > 0 ? "+" : ""}${fmt(v, 1)}%`;
+  const axes = {
+    id: "axes0",
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea: a, scales: { x, y } } = chart;
+      ctx.save(); ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x.getPixelForValue(0), a.top); ctx.lineTo(x.getPixelForValue(0), a.bottom);
+      ctx.moveTo(a.left, y.getPixelForValue(0)); ctx.lineTo(a.right, y.getPixelForValue(0)); ctx.stroke();
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = css("--muted");
+      const [x0, x1, y0, y1] = [x.getPixelForValue(-5), x.getPixelForValue(5), y.getPixelForValue(5), y.getPixelForValue(-5)];
+      ctx.strokeRect(x0, y0, x1 - x0, y1 - y0); ctx.restore();
+    },
+  };
+  new Chart(document.getElementById("c-type"), {
+    type: "bubble",
+    data: { datasets: TYPES.map(([t, c]) => {
+      const rows = T.filter((r) => r.type === t);
+      return { label: `${t} (${rows.length})`, backgroundColor: c + "b3", borderColor: rows.map((r) => isFocus(r) ? css("--ink") : c),
+        borderWidth: rows.map((r) => isFocus(r) ? 2.5 : 1),
+        data: rows.map((r) => ({ x: r.da, y: r.dd, r: 3 + Math.sqrt(r.area1) / 2.2, row: r })) };
+    }) },
+    options: { maintainAspectRatio: false,
+      plugins: { legend: { position: "top", labels: { boxWidth: 12 } },
+        tooltip: { callbacks: { label: (c) => { const r = c.raw.row;
+          return [`${r.name} · ${r.type}`, `면적 ${fmt(r.area0)} → ${fmt(r.area1)} km² (${sign(r.da)})`, `밀도 ${sign(r.dd)}, 인구 ${sign(r.dp)}`]; } } } },
+      scales: { x: { title: { display: true, text: "도시·준밀집지역 면적 변화 2015→2024 (%)" }, ticks: { callback: (v) => v + "%" } },
+                y: { title: { display: true, text: "인구밀도 변화 (%)" }, ticks: { callback: (v) => v + "%" } } } },
+    plugins: [axes],
+  });
+  const med = (a) => { const b = [...a].sort((p, q) => p - q), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; };
+  let h = "<thead><tr><th>유형</th><th class='num'>시·군 수</th><th class='num'>면적 변화</th><th class='num'>밀도 변화</th>" +
+          "<th class='num'>인구 변화</th><th>면적이 큰 곳</th></tr></thead><tbody>";
+  TYPES.forEach(([t, c]) => {
+    const rows = T.filter((r) => r.type === t);
+    const top = [...rows].sort((p, q) => q.area1 - p.area1).slice(0, 6).map((r) => r.name).join(", ");
+    h += `<tr><td><i class="sw" style="background:${c};margin-right:6px"></i>${t}</td><td class="num">${rows.length}</td>` +
+         ["da", "dd", "dp"].map((k) => `<td class="num">${sign(med(rows.map((r) => r[k])))}</td>`).join("") + `<td>${top}</td></tr>`;
+  });
+  document.getElementById("tbl-type").innerHTML = h + "</tbody>";
+})();
 
 // 전국 도시화지역 동적 지도 (Leaflet + CARTO)
 (() => {
