@@ -133,7 +133,7 @@
 <section id="q">
   <h2><span class="no">1</span>연구 질문 및 분석 대상</h2>
   <p><b>분석 기간</b>: 2015→2024년. SGIS 격자 인구가 2015년부터 등록센서스 기준으로 바뀌어, 그 전후를 잇는 증감에는 집계 기준 변경 효과가 섞인다.
-    같은 기준으로 비교할 수 있는 2015년을 출발점으로 삼았다(2000년부터의 장기 추세는 참고로만 제시).</p>
+    같은 기준으로 비교할 수 있는 2015년을 출발점으로 삼았다(2000~2010년 값은 동적 지도와 시계열 차트에서 참고로만 제시).</p>
   <p><b>분석 대상</b>: 전국(시군구 단위 비교)과, 2015→2024 DID 인구밀도 감소율 Top 10 시군구 중 수도권(광명·의왕·성남 수정·군포)을 뺀 6곳이다.
     해당 시군구가 속한 도시 전체를 확대 분석했다.</p>
   <div class="table-wrap"><table>
@@ -240,16 +240,10 @@ DID 인구밀도   D = P / A
     </aside>
   </div>
   <p class="muted">500m 격자 DID. 위 버튼으로 연도(2000~2024)나 2015→2024 변화를 고르고, 밀도 기준 2,000·4,000명/km²를 함께 켜면 한 지도에 겹쳐 보인다
-    (변화 보기에서 두 기준을 함께 켜면 4,000 기준은 점선 테두리). 시군구를 누르면 그 시군구로 확대되고 오른쪽 그래프가 그 시군구로 바뀐다.
+    (변화 보기에서 두 기준을 함께 켜면 4,000 기준은 점선 테두리). 경계는 시·군 단위다(특별시·광역시·특별자치시는 하나로, 일반구가 있는 시는 시로 합침). 지역을 누르면 그 지역으로 확대되고 오른쪽 그래프가 그 지역으로 바뀐다.
     그래프의 2010→2015 점선 구간은 SGIS 집계 기준 변경 구간이다. 배경지도 © Esri Light Gray Canvas (CARTO 키가 있으면 CARTO Positron).</p>
-  <div class="grid2">
-    <figure><img src="img/did_national_facets.webp" alt="연도별 전국 DID" loading="lazy">
-      <figcaption>연도별 DID (500m 격자, 2,000명/km²).</figcaption></figure>
-    <figure><img src="img/did_change_capital.webp" alt="수도권 DID 변화" loading="lazy">
-      <figcaption>수도권 확대(2015→2024). 신도시·택지개발지구가 주황 덩어리로 드러난다.</figcaption></figure>
-  </div>
-  <figure><img src="img/did_change_national_2000.webp" alt="전국 DID 변화 2000→2024 지도 (참고)" loading="lazy">
-    <figcaption>참고: 2000→2024 장기 변화. 2010→2015 집계 기준 변경 효과가 섞여 있다.</figcaption></figure>
+  <figure><img src="img/did_change_capital.webp" alt="수도권 DID 변화" loading="lazy">
+    <figcaption>수도권 확대(2015→2024). 신도시·택지개발지구가 주황 덩어리로 드러난다.</figcaption></figure>
 
   <h3>4-2. DID 인구밀도 변화 시계열</h3>
   <div class="grid2">
@@ -260,7 +254,7 @@ DID 인구밀도   D = P / A
 
   <h3>4-3. 인구밀도 변화 Top 10 시군구 (전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-topdens"></canvas></div></div>
-  <p class="muted">2015·2024 두 해 모두 DID가 일정 면적 이상인 시군구 중 DID 밀도 감소율이 큰 순. 점선은 전국 DID 밀도 변화율. 수도권 4곳을 뺀 6곳이 확대 분석 대상이다.</p>
+  <p class="muted">2015·2024 두 해 모두 DID가 일정 면적 이상인 시군구 중 DID 밀도 감소율이 큰 순. 점선은 전국 DID 밀도 변화율. 진한 막대(★)는 수도권 4곳을 뺀 확대 분석 대상 6곳이다.</p>
 
   <h3>4-4. DID 면적 최대 변화 Top 10 시군구 (서울·경기 제외, 전국 평균 대비)</h3>
   <div class="chart tall"><div class="box"><canvas id="c-toparea"></canvas></div></div>
@@ -403,13 +397,17 @@ const lineChart = (id, key, title, unit) => new Chart(document.getElementById(id
 lineChart("c-density", "did_density", "DID 인구밀도 (명/km²)", "명/km²");
 lineChart("c-area", "did_area_km2", "DID 면적 (km²)", "km²");
 
-const barChart = (id, rows, key, ref, refLabel, tip, color) => new Chart(document.getElementById(id), {
+// 확대 분석한 6개 도시의 시군구 = 밀도 감소 Top 10 중 수도권(서울·경기·인천) 밖
+const FOCUS = (r) => !["서울", "경기", "인천"].includes(r.sido);
+const barChart = (id, rows, key, ref, refLabel, tip, color, mark = () => false) => new Chart(document.getElementById(id), {
   type: "bar",
-  data: { labels: rows.map((r) => `${r.SIGUNGU_NM} (${r.sido})`),
+  data: { labels: rows.map((r) => `${mark(r) ? "★ " : ""}${r.SIGUNGU_NM} (${r.sido})`),
           datasets: [{ data: rows.map((r) => r[key]), backgroundColor: color, borderRadius: 4 }] },
   options: { indexAxis: "y", maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: tip } } },
-    scales: { x: { ticks: { callback: (v) => v + "%" } }, y: { ticks: { color: css("--ink") } } } },
+    scales: { x: { ticks: { callback: (v) => v + "%" } },
+      y: { ticks: { color: (c) => mark(rows[c.index]) ? css("--ink") : css("--muted"),
+        font: (c) => ({ weight: mark(rows[c.index]) ? 700 : 400 }) } } } },
   plugins: [refLine(ref, refLabel)],
 });
 barChart("c-topdens", D.top_density, "density_chg_pct", D.national.density_chg_pct,
@@ -417,7 +415,7 @@ barChart("c-topdens", D.top_density, "density_chg_pct", D.national.density_chg_p
   (c) => { const r = D.top_density[c.dataIndex];
     return [`밀도 ${fmt(r.density_2015)} → ${fmt(r.density_2024)} 명/km² (${r.density_chg_pct}%)`,
             `면적 ${r.area_chg_pct > 0 ? "+" : ""}${r.area_chg_pct}%, 인구 ${r.pop_chg_pct > 0 ? "+" : ""}${r.pop_chg_pct}%`]; },
-  "#b23a2b");
+  D.top_density.map((r) => FOCUS(r) ? "#b23a2b" : "#d9c3bf"), FOCUS);
 barChart("c-toparea", D.top_area, "area_chg_pct", D.national.area_chg_pct,
   `전국 +${D.national.area_chg_pct}%`,
   (c) => { const r = D.top_area[c.dataIndex];
@@ -530,14 +528,15 @@ render();
     document.getElementById("map-legend").innerHTML = h || "<span>밀도 기준을 하나 이상 켜세요.</span>";
   }
 
-  // 시군구 경계: 마우스를 올리면 강조, 누르면 확대 + 그래프 전환
+  // 시·군 경계(특별·광역시는 하나): 마우스를 올리면 강조, 누르면 확대 + 그래프 전환
+  const unitName = (p) => [p.sd, p.nm].filter(Boolean).join(" ");
   const base = { color: "#4a4f55", weight: 0.7, opacity: 0.55, fill: true, fillColor: "#000", fillOpacity: 0 };
   const hover = { weight: 2, opacity: 0.9, fillOpacity: 0.04 };
   const picked = { color: "#1d1d1f", weight: 3, opacity: 1, fillOpacity: 0 };
   let sggLayer, selLayer = null;
-  load("sigungu").then((gj) => {
+  load("units").then((gj) => {
     sggLayer = L.geoJSON(gj, { pane: "sgg", style: base, onEachFeature: (f, lyr) => {
-      lyr.bindTooltip(`${f.properties.sd} ${f.properties.nm}`, { sticky: true, className: "sgg-tip" });
+      lyr.bindTooltip(unitName(f.properties), { sticky: true, className: "sgg-tip" });
       lyr.on("mouseover", () => lyr !== selLayer && lyr.setStyle(hover));
       lyr.on("mouseout", () => lyr !== selLayer && lyr.setStyle(base));
       lyr.on("click", () => select(f, lyr));
@@ -574,8 +573,8 @@ render();
 
   function side() {
     if (!series) return;
-    const p = st.sel, s = p ? series.sgg[p.cd] || {} : series.national;
-    document.getElementById("side-title").textContent = p ? `${p.sd} ${p.nm}` : "전국";
+    const p = st.sel, s = p ? series.units[p.cd] || {} : series.national;
+    document.getElementById("side-title").textContent = p ? unitName(p) : "전국";
     document.getElementById("side-reset").hidden = !p;
     const cur = st.view === "change" ? -1 : YEARS.indexOf(+st.view);
     [[cArea, "area"], [cDens, "dens"]].forEach(([ch, k]) => {
@@ -589,12 +588,12 @@ render();
       ch.update();
     });
     const d = s[2000], i0 = YEARS.indexOf(2015), i1 = YEARS.length - 1;
-    let txt = "시군구를 누르면 그 시군구의 그래프로 바뀐다.";
+    let txt = "지도에서 시·군이나 특별·광역시를 누르면 그 지역의 그래프로 바뀐다.";
     if (d && d.area[i0] && d.area[i1]) {
       const D0 = d.pop[i0] / d.area[i0], D1 = d.pop[i1] / d.area[i1], pct = (a, b) => `${b >= a ? "+" : ""}${fmt(100 * (b / a - 1), 1)}%`;
       txt = `2015→2024 (2,000명/km²) · 면적 ${fmt(d.area[i0], 1)} → ${fmt(d.area[i1], 1)} km² (${pct(d.area[i0], d.area[i1])}), ` +
             `밀도 ${fmt(D0)} → ${fmt(D1)} 명/km² (${pct(D0, D1)})` + (p ? "" : ". " + txt);
-    } else if (p) txt = d ? "2015 또는 2024년에 DID가 없어 변화율을 계산하지 않았다." : "2000~2024년 DID가 없는 시군구다.";
+    } else if (p) txt = d ? "2015 또는 2024년에 DID가 없어 변화율을 계산하지 않았다." : "2000~2024년 DID가 없는 지역이다.";
     document.getElementById("side-sub").textContent = txt;
   }
   fetch("map/series.json").then((r) => r.json()).then((j) => { series = j; side(); });

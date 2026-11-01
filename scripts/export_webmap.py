@@ -2,8 +2,8 @@
 
 - did_{기준}_{연도}.geojson : 연도·밀도 기준별 DID 폴리곤 (500m 격자)
 - change_{기준}.geojson     : 2015→2024 유지·신규·빈 네모 구역
-- sigungu.geojson           : 2025 시군구 경계 (클릭·확대용)
-- series.json               : 전국과 시군구별 연도·기준별 DID 면적·인구 (그래프용)
+- units.geojson             : 시·군 경계 (특별시·광역시·특별자치시는 하나로, 일반구는 시로 합침. 클릭·확대용)
+- series.json               : 전국과 시·군별 연도·기준별 DID 면적·인구 (그래프용)
 
 실행: ~/.venvs/did-analysis/bin/python scripts/export_webmap.py
 """
@@ -23,11 +23,30 @@ OUT = ROOT / "W8_DID-MAP" / "site" / "map"
 RES = da.MAIN_RES
 Y0, Y1 = da.CHANGE_START, da.YEARS[-1]
 SGG_SIMPLIFY_M = 100
+GAP_M = 200
+METRO = {"11": "서울특별시", "21": "부산광역시", "22": "대구광역시", "23": "인천광역시", "24": "광주광역시",
+         "25": "대전광역시", "26": "울산광역시", "29": "세종특별자치시"}
+
+
+def add_units(sgg):
+    """시군구 → 지도 단위. 특별·광역시는 시도 전체, 도는 시·군 (수원시 장안구 → 수원시)."""
+    metro = sgg["sido_cd"].isin(METRO)
+    city = sgg["SIGUNGU_NM"].str.split(" ").str[0]
+    sgg["unit_cd"] = sgg["sido_cd"].where(metro, sgg["sido_cd"] + "_" + city)
+    sgg["unit_nm"] = sgg["sido_cd"].map(METRO).where(metro, city)
+    sgg["unit_sd"] = sgg["sido"].where(~metro, "")
+    return sgg
 
 
 def polygons(geom):
     """교차·차집합 결과에서 면만 남긴다 (선·점 잔여물 제거)."""
     return shapely.MultiPolygon([g for g in shapely.get_parts(geom) if g.geom_type == "Polygon"])
+
+
+def drop_holes(geom, min_km2=2):
+    """합칠 때 생긴 작은 구멍을 지운다."""
+    keep = lambda p: shapely.Polygon(p.exterior, [r for r in p.interiors if shapely.Polygon(r).area >= min_km2 * 1e6])
+    return shapely.MultiPolygon([keep(p) for p in shapely.get_parts(geom)])
 
 
 def round_coords(c, nd=5):
@@ -72,21 +91,28 @@ def main():
 
     sgg = da.load_sigungu()
     sgg["sido"] = sgg["sido_cd"].map(da.SIDO)
-    size += write_geojson(sgg.assign(geometry=sgg.geometry.simplify(SGG_SIMPLIFY_M)), "sigungu.geojson", {"cd": "SIGUNGU_CD", "nm": "SIGUNGU_NM", "sd": "sido"})
+    sgg = add_units(sgg)
+    units = sgg.dissolve("unit_cd", aggfunc="first").reset_index()
+    # 시군구 경계는 이미 따로 단순화돼 있어 합친 경계 안에 가는 틈이 남는다. 넓혔다 줄여 메운다.
+    units["geometry"] = units.geometry.buffer(GAP_M).buffer(-GAP_M).map(drop_holes).simplify(SGG_SIMPLIFY_M)
+    size += write_geojson(units, "units.geojson", {"cd": "unit_cd", "nm": "unit_nm", "sd": "unit_sd"})
 
-    # 시군구별 시계열: DID 격자를 중심점으로 시군구에 배정 (did_analysis.region_table과 같은 방식)
+    # 시·군별 시계열: DID 격자를 중심점으로 시군구에 배정한 뒤(did_analysis.region_table과 같은 방식) 단위로 합친다
     cells = da.load_cells(RES)
     summ = pd.read_csv(ROOT / "output" / "tables" / "did_summary.csv")
     summ = summ[summ["res"] == RES]
-    series = {"years": da.YEARS, "national": {}, "sgg": {}}
+    series = {"years": da.YEARS, "national": {}, "units": {}}
+    unit_of = sgg.set_index("SIGUNGU_CD")["unit_cd"]
     for thr in da.THRESHOLDS:
         s = summ[summ["threshold"] == thr].set_index("year").reindex(da.YEARS)
         series["national"][thr] = {"area": s["did_area_km2"].round(2).tolist(), "pop": s["did_pop"].tolist()}
         did_cells = {y: da.extract_did(cells, y, thr)[1] for y in da.YEARS}
         reg = da.region_table(did_cells, sgg)
-        for cd, g in reg.groupby("SIGUNGU_CD"):
+        reg["unit_cd"] = reg["SIGUNGU_CD"].map(unit_of)
+        reg = reg.groupby(["unit_cd", "year"])[["did_area_km2", "did_pop"]].sum().reset_index()
+        for cd, g in reg.groupby("unit_cd"):
             g = g.set_index("year")[["did_area_km2", "did_pop"]].reindex(da.YEARS).fillna(0)
-            series["sgg"].setdefault(cd, {})[thr] = {"area": g["did_area_km2"].round(2).tolist(),
+            series["units"].setdefault(cd, {})[thr] = {"area": g["did_area_km2"].round(2).tolist(),
                                                      "pop": g["did_pop"].astype(int).tolist()}
     path = OUT / "series.json"
     path.write_text(json.dumps(series, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

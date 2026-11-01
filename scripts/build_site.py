@@ -22,10 +22,8 @@ Y0, Y1 = 2015, 2024
 CITIES = ["대구", "부산", "광주", "동해", "창원", "울산"]
 
 IMAGES = {
-    "maps/did_500M_2000_national.png": "did_national_facets",
     "maps/did_change_2015_2024_500M_2000_national.png": "did_change_national",
     "maps/did_change_2015_2024_500M_2000_capital.png": "did_change_capital",
-    "maps/did_change_2000_2024_500M_2000_national.png": "did_change_national_2000",
     "maps/compare_overlay_2024_500M_national.png": "compare_sgis_2024",
     "maps/cities/cities_change_2015_2024_500M_2000.png": "cities_change",
     "maps/migration/migration_trends.png": "migration_trends",
